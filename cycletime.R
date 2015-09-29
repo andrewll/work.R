@@ -30,7 +30,7 @@ cycletime <- function(file1){
     summarize(PIDCount = sum(PIDCount), OrderCOnfirmtoDock_Actual_Avg = mean(OrderCOnfirmtoDock_Actual, na.rm=TRUE), OrderCOnfirmtoDock_Actual_95th = quantile(OrderCOnfirmtoDock_Actual, .95, na.rm=TRUE), Dock_to_RTEG_Avg = mean(DTR1, na.rm=TRUE),  Dock_to_RTEG_95th = quantile(DTR1, .95, na.rm=TRUE), OrderCOnfirmtoRTEG_Avg = mean(OrderCOnfirmtoRTEG_Actual2, na.rm=TRUE), OrderCOnfirmtoRTEG_95th = quantile(OrderCOnfirmtoRTEG_Actual2, .95,na.rm=TRUE)) %>%
     arrange(EG, ProjectCategory, Year_Delivered, Month_Delivered)
     
-  write.csv(dat4,file="MCIOdata/All/ouput_cycletime.csv")
+  write.csv(dat4,file="ouput_cycletime.csv")
   View(dat4)
   
 }
