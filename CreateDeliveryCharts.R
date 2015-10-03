@@ -9,8 +9,10 @@ library(reshape2)
 
 
 ##set the path to DeploymentPerformance file
-path <- paste0("C:/Users/answami/Documents",
-               "/WindowsPowerShell/Scripts/Deployments")
+##path <- paste0("C:/Users/answami/Documents",
+##               "/WindowsPowerShell/Scripts/Deployments")
+path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data")
+
 
 ##define the deloyments file
 file1 <- "DeliveryPerformance.csv"
@@ -71,6 +73,7 @@ milestones <- milestones[which(as.character(milestones$DeploymentClass) == "New 
 
 ##define the EGs we want to evaluate
 EGList <- c("Azure", "O365 Exchange", "AP", "O365 SharePoint")
+##EGList <- c("Core Apps","CRM","FOPE","ISSD (Azure AAD)","O365 Lync","XBOX")
 
 ##select only Azure and EXO 
 pids <- pids[which(as.character(pids$EG) %in% EGList),]
@@ -144,9 +147,11 @@ halfyear <- c("2015-01","2015-02","2015-03",
               "2015-04","2015-05","2015-06",
               "2015-07", "2015-08", "2015-09")
 
+quarteryear <-c("2015-07", "2015-08", "2015-09")
+
 ##take the time period in question
-result <- result[which(result$rtegmonthname %in% halfyear),]
-milestones <- milestones[which(milestones$rtegmonthname %in% halfyear),]
+result <- result[which(result$rtegmonthname %in% quarteryear),]
+milestones <- milestones[which(milestones$rtegmonthname %in% quarteryear),]
 
 
 ##there are some absurd PIDs. drop it while we investigate what's going on
@@ -377,21 +382,21 @@ plot4 <- plot4 + scale_x_discrete(name="")
 
 ##print graphs to PNG
 
-ggsave( "./DeliveryPerformance/ControlChart.png",
+ggsave( "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/ControlChart.png",
         plot3,
         width = 20,
         height = 10,
         dpi = 1200)
 
 
-ggsave( "./DeliveryPerformance/Boxplots.png",
+ggsave( "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/Boxplots.png",
         plot1,
         width = 20,
         height = 10,
         dpi = 1200)
 
 
-ggsave( "./DeliveryPerformance/MilestoneBoxplot.png",
+ggsave( "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/MilestoneBoxplot.png",
         plot4,
         width = 20,
         height = 10,
@@ -407,7 +412,7 @@ stats <- ddply(result,
 
 
 ##wtite stats to csv file
-write.csv(stats, "C:/Users/answami/Documents/R/Code/DeliveryPerformance/stats.csv")
+write.csv(stats, "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/stats.csv")
 
 #reshape milestone data for writing to file
 ##dump sequence number; we don't need it any more
@@ -415,7 +420,7 @@ milestones3$MilestoneSequenceNumber <- NULL
 milestones_wide <- dcast(milestones3, DeliveryNumber + rtegmonthname + EG ~ Milestone)
 
 ##write data files to csv files
-write.csv(result, "C:/Users/answami/Documents/R/Code/DeliveryPerformance/DockToRTEGPlotData.csv")
-write.csv(milestones_wide, "C:/Users/answami/Documents/R/Code/DeliveryPerformance/MilestoneCTPlotData.csv")
+write.csv(result, "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/DockToRTEGPlotData.csv")
+write.csv(milestones_wide, "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/MilestoneCTPlotData.csv")
 
 

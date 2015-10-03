@@ -15,7 +15,7 @@ cycletime <- function(file1){
   library(dplyr)
   library(lubridate)
   ##mydf <- read.csv(file1, stringsAsFactors = FALSE)
-  mydf<-read.csv("DelCap-Jul1-Sep28-alleg-networkandservers.csv", stringsAsFactors = FALSE)
+  mydf<-read.csv("C:/Users/andrewll/Documents/R/MCIOdata/All/DelCap-Jul1-Sep28-alleg-networkandservers.csv", stringsAsFactors = FALSE)
   dat <- tbl_df(mydf)
   
   ##select desired columns from the dataframe and add some new ones for month and year delivered
