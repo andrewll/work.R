@@ -122,6 +122,7 @@ requestedrteg<-function(EGtype, filetype1){
   ,p.DemandCreatedDate
   ,p.ProjectCreationDate
   ,p.POConfirmedDockDate
+  ,p.DTR
   ,p.CurrentCommittedDockDate
   ,p.RequestedDeliveryDate
   ,p.rtegActualMonth
@@ -133,10 +134,11 @@ requestedrteg<-function(EGtype, filetype1){
   
   pids2 <- sqldf(SQLQuery1)
   
-
-  
   ##create column for performance to RRTEG
   pids3 <- mutate(pids2, PerformanceToRequestedRTEG = DMEstimatedRTEGDate - RequestedDeliveryDate)
+  
+  ##Add a monthname column
+  pids3$rtegmonthname <- format(pids3$rtegActualMonth, format = "%Y-%m")
   
   ##create table report of all PIDs
   pids4 <- subset(pids3, select = c("EG", 
@@ -149,18 +151,19 @@ requestedrteg<-function(EGtype, filetype1){
                                     "DMEstimatedRTEGDate",
                                     "PerformanceToRequestedRTEG",
                                     "rtegActualMonth",
-                                    "WaveCategory"))
+                                    "rtegmonthname",
+                                    "WaveCategory",
+                                    "DTR"))
   
   ##select only the desired categories and EG
   pids5<-pids4[which(pids4$ProjectCategory=="PRD"),]
   pids6<-pids5[which(pids5$EG=="O365 SharePoint"),]
   
+
   ##print output file
   write.csv(pids6,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/ouput_rrteg_report.csv")
   
-  ##Add a monthname column
-  pids6$rtegmonthname <- format(pids6$rtegActualMonth, format = "%Y-%m")
-  
+
   ##calculate pidcount
   pidcount <- count(pids6, vars = c("EG", "as.factor(rtegmonthname)"))
   names(pidcount) <- c("EG", "rtegmonthname", "pidcount")
