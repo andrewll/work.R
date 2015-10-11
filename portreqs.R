@@ -6,13 +6,19 @@ portreq <- function(){
   ##
   ########################
   
-  library(dplyr)
-  library(lubridate)
   library(ggplot2)
+  library(dplyr)
+  library(sqldf)
+  library(scales)
+  library(reshape2)
+  library(lubridate)
 
   ## read the pids input file
-  pids1 <- read.csv("C:/Users/andrewll/Documents/metrics/inputpids.csv", 
+  ##pids1 <- read.csv("C:/Users/andrewll/Documents/metrics/inputpids.csv", 
+  ##                  header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
+  pids1 <- read.csv("C:/Users/andrewll/Documents/metrics/inputpids2.csv", 
                     header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
+  
   
   ## read the port requests input file
   preqs1 <- read.csv("C:/Users/andrewll/Documents/metrics/portrequests.csv",
@@ -39,9 +45,12 @@ portreq <- function(){
   pids2$DemandCreatedDate<-as.Date(pids2$DemandCreatedDate,format = "%m/%d/%Y")
   pids2$ProjectCreationDate<-as.Date(pids2$ProjectCreationDate,format = "%m/%d/%Y")
   pids2$RTEGActualDeliveryDate<-as.Date(pids2$RTEGActualDeliveryDate,format = "%m/%d/%Y")
-  pids2$CommittedDeliveryDate1<-as.Date(pids2$CommittedDeliveryDate1,format = "%m/%d/%Y")
-  pids2$woadDock2<-as.Date(pids2$woadDock2,format = "%m/%d/%Y")
-  pids2$RequestedDeliveryDate3<-as.Date(pids2$RequestedDeliveryDate3,format = "%m/%d/%Y")
+  ##pids2$CommittedDeliveryDate1<-as.Date(pids2$CommittedDeliveryDate1,format = "%m/%d/%Y")
+  pids2$CommittedDeliveryDate<-as.Date(pids2$CommittedDeliveryDate,format = "%m/%d/%Y")
+  ##pids2$woadDock2<-as.Date(pids2$woadDock2,format = "%m/%d/%Y")
+  pids2$WorkOrderActualDockDate<-as.Date(pids2$WorkOrderActualDockDate,format = "%m/%d/%Y")
+  ##pids2$RequestedDeliveryDate3<-as.Date(pids2$RequestedDeliveryDate3,format = "%m/%d/%Y")
+  pids2$RequestedDeliveryDate<-as.Date(pids2$RequestedDeliveryDate,format = "%m/%d/%Y")
   
   wo3$Work.Order.Actual.Start.Date<-as.Date(wo3$Work.Order.Actual.Start.Date,format = "%m/%d/%Y")
   wo3$Work.Order.Actual.End.Date<-as.Date(wo3$Work.Order.Actual.End.Date,format = "%m/%d/%Y")
@@ -70,16 +79,16 @@ portreq <- function(){
   ,t.EG
   ,p.DeliveryNumber
   ,p.EG
-  ,p.woadDock2
-  ,p.CommittedDeliveryDate1
+  ,p.WorkOrderActualDockDate
+  ,p.CommittedDeliveryDate
   ,p.RTEGActualDeliveryDate
   ,p.DemandCreatedDate
   ,p.ProjectCreationDate
-  ,p.DTR
+  ,p.DockToRTEG
   FROM preqs3 t
   LEFT JOIN pids2 p
-  ON t.GFSDUTS = p.DeliveryNumber
-  "
+  ON t.GFSDUTS = p.DeliveryNumber"
+  
   result <- sqldf(SQLQuery1)
   
   ##calculate new variables
