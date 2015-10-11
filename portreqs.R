@@ -48,10 +48,39 @@ portreq <- function(){
   
   
   ##convert the DeliveryNumber field to character
+  preqs2$GFSD.UTS <- as.character(preqs2$GFSD.UTS)
+  pids2$DeliveryNumber <- as.character(pids2$DeliveryNumber)
+  wo3$DeliveryNumber <- as.character(wo3$DeliveryNumber)
   
-  ##remove the dots from the column names
+  ##remove the dots and underscores from the column names
+  preqs2names <- gsub("\\.","",names(preqs2))
+  colnames(preqs2) <- c(preqs2names)
+
+  wo3names <- gsub("\\.","",names(wo3))
+  colnames(wo3) <- c(wo3names)
+  
+  ##make column name for primary key the same for all input tables
+  preqs3 <- mutate(preqs2, DeliverNumber = GFSDUTS)
   
   ##join the tables by DeliveryNumber
+  SQLQuery1 <- "SELECT t.ID
+  ,t.GFSDUTS
+  ,t.CreatedDate
+  ,t.Actual_Finish
+  ,t.EG
+  ,p.DeliveryNumber
+  ,p.EG
+  ,p.woadDock2
+  ,p.CommittedDeliveryDate1
+  ,p.RTEGActualDeliveryDate
+  ,p.DemandCreatedDate
+  ,p.ProjectCreationDate
+  ,p.DTR
+  FROM preqs3 t
+  LEFT JOIN pids2 p
+  ON t.GFSDUTS = p.DeliveryNumber
+  "
+  result <- sqldf(SQLQuery1)
   
   ##calculate new variables
   
