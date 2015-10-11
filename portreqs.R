@@ -43,7 +43,7 @@ portreq <- function(){
   preqs2$Actual_Finish<-as.Date(preqs2$Actual_Finish,format = "%m/%d/%Y")
   
   pids2$DemandCreatedDate<-as.Date(pids2$DemandCreatedDate,format = "%m/%d/%Y")
-  pids2$ProjectCreationDate<-as.Date(pids2$ProjectCreationDate,format = "%m/%d/%Y")
+  ##pids2$ProjectCreationDate<-as.Date(pids2$ProjectCreationDate,format = "%m/%d/%Y")
   pids2$RTEGActualDeliveryDate<-as.Date(pids2$RTEGActualDeliveryDate,format = "%m/%d/%Y")
   ##pids2$CommittedDeliveryDate1<-as.Date(pids2$CommittedDeliveryDate1,format = "%m/%d/%Y")
   pids2$CommittedDeliveryDate<-as.Date(pids2$CommittedDeliveryDate,format = "%m/%d/%Y")
@@ -51,6 +51,8 @@ portreq <- function(){
   pids2$WorkOrderActualDockDate<-as.Date(pids2$WorkOrderActualDockDate,format = "%m/%d/%Y")
   ##pids2$RequestedDeliveryDate3<-as.Date(pids2$RequestedDeliveryDate3,format = "%m/%d/%Y")
   pids2$RequestedDeliveryDate<-as.Date(pids2$RequestedDeliveryDate,format = "%m/%d/%Y")
+  pids2$CurrentCommittedDockDate<-as.Date(pids2$CurrentCommittedDockDate,format = "%m/%d/%Y")
+  pids2$ReceivingDate<-as.Date(pids2$ReceivingDate,format = "%m/%d/%Y")
   
   wo3$Work.Order.Actual.Start.Date<-as.Date(wo3$Work.Order.Actual.Start.Date,format = "%m/%d/%Y")
   wo3$Work.Order.Actual.End.Date<-as.Date(wo3$Work.Order.Actual.End.Date,format = "%m/%d/%Y")
@@ -76,10 +78,13 @@ portreq <- function(){
   ,t.GFSDUTS
   ,t.CreatedDate
   ,t.Actual_Finish
-  ,t.EG
+  ,t.EG as Property
   ,p.DeliveryNumber
   ,p.EG
+  ,p.ProjectCategory
   ,p.WorkOrderActualDockDate
+  ,p.CurrentCommittedDockDate
+  ,p.ReceivingDate
   ,p.CommittedDeliveryDate
   ,p.RTEGActualDeliveryDate
   ,p.DemandCreatedDate
@@ -92,7 +97,31 @@ portreq <- function(){
   result <- sqldf(SQLQuery1)
   
   ##calculate new variables
+  result2 <- mutate(result, portreqcycletime = Actual_Finish - CreatedDate
+                    , createdbeforedockdate = 1
+                    , finishbeforedockdate = 1
+                    , portreqactualfinishmonthname = format(Actual_Finish, "%Y-%m"))
   
+  ##find dock date to use if WorkOrderActualDockDate is Null
+  for (i in 1:dim(result)){
+    if(!is.na(result2[i,]$WorkOrderActualDockDate)){
+      result2[i,]$createdbeforedockdate<-result2[i,]$CreatedDate - result2[i,]$WorkOrderActualDockDate
+      result2[i,]$finishbeforedockdate <-result2[i,]$Actual_Finish - result2[i,]$WorkOrderActualDockDate
+    }else if(!is.na(result2[i,]$CurrentCommittedDockDate)){
+      result2[i,]$createdbeforedockdate<-result2[i,]$CreatedDate - result2[i,]$CurrentCommittedDockDate
+      result2[i,]$finishbeforedockdate <-result2[i,]$Actual_Finish - result2[i,]$CurrentCommittedDockDate
+    }else 
+      result2[i,]$createdbeforedockdate<-result2[i,]$CreatedDate - result2[i,]$ReceivingDate
+     result2[i,]$finishbeforedockdate<-result2[i,]$Actual_Finish - result2[i,]$ReceivingDate
+  }
+
+  
+  
+  ##print output file
+  write.csv(result2,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_portrequests_report.csv")
+  
+  
+
   
   
   
