@@ -15,7 +15,7 @@ cycletime <- function(file1){
   library(dplyr)
   library(lubridate)
   ##mydf <- read.csv(file1, stringsAsFactors = FALSE)
-  mydf<-read.csv("C:/Users/andrewll/Documents/R/MCIOdata/All/DelCap-Jul1-Sep30-alleg-networkandservers.csv", stringsAsFactors = FALSE)
+  mydf<-read.csv("C:/Users/andrewll/Documents/R/MCIOdata/All/DelCap-Jul1-Oct11-SPO-networkandservers.csv", stringsAsFactors = FALSE)
   dat <- tbl_df(mydf)
   
   ##select desired columns from the dataframe and add some new ones for month and year delivered
@@ -40,8 +40,8 @@ cycletime <- function(file1){
                  pocreate = as.Date(woadPOCreation, format = "%m/%d/%Y"), 
                  dockdate = as.Date(woadDock2, format = "%m/%d/%Y"))
   
-  dat4 <- mutate(dat3, pidcreate_to_pocreate = pocreate - pidcreate, 
-                 pocreate_to_dock = dockdate - pocreate)
+  dat4 <- mutate(dat3, pidcreate_to_pocreate = as.numeric(pocreate - pidcreate), 
+                 pocreate_to_dock = as.numeric(dockdate - pocreate))
  
   ##summarize and create report table
   dat5<- dat4 %>% 
@@ -64,17 +64,46 @@ cycletime <- function(file1){
   
   View(dat5)
   
+
   ## create PRD charts
-  dat6<-dat4[which(dat4$ProjectCategory=="PRD"),]
+  dat6<-dat4[which(dat4$ProjectCategory=="PRD"),] 
+  
+  ##count pids
+  pidcount <- count(dat6, vars = c("EG", "as.factor(Month_Delivered)"))
+  names(pidcount) <- c("EG", "monthdelivered", "pidcount")
+  
+  ##merge pidcount into dat6 dataframe
+  ##dat7 <- merge(dat6, pidcount, by.x = c("EG","Month_Delivered"), by.y = c("EG","monthdelivered"))  use this if you have more than one EG
+  dat7 <- merge(dat6, pidcount, by.x = c("Month_Delivered"), by.y = c("monthdelivered"))
+  dat7<-mutate(dat7, monthdelivered = format(as.Date(RTEGActualDeliveryDate, format = "%m/%d/%Y"),"%Y-%m"))  ##restore the month delivered column
+  
+  ##Create plots
+  ##DTR
+  plotdtr <- ggplot(data = dat7, aes(x = monthdelivered, y = DTR1)) 
+  plotdtr + geom_boxplot() + geom_text(aes(x = monthdelivered, y = -5, label = pidcount, size = 1, face = "bold"), show_guide = FALSE)+ ylab("Dock-To-RTEG cycle time (days)") + xlab("Month Delivered and pidcount")+ labs(title="SPO PRD Dock-to-RTEG")
+  
+  ggsave( "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/Boxplots.png",
+          plotdtr,
+          width = 20,
+          height = 10,
+          dpi = 1200)
+  
+  #pidcreate_to_pocreate
+  plotpidtopo <- ggplot(data = dat7, aes(x = monthdelivered, y = pidcreate_to_pocreate)) 
+  plotpidtopo + geom_boxplot() + geom_text(aes(x = monthdelivered, y = -5, label = pidcount, size = 1, face = "bold"), show_guide = FALSE)+ ylab("PIDCreate_to_POCreate cycle time (days)") + xlab("Month Delivered and pidcount")+ labs(title="SPO PRD PIDCreate-to-POCreate")
+  
+  #pocreate_to_dock
+  plotpotodock <- ggplot(data = dat7, aes(x = monthdelivered, y = pocreate_to_dock)) 
+  plotpotodock + geom_boxplot() + geom_text(aes(x = monthdelivered, y = -5, label = pidcount, size = 1, face = "bold"), show_guide = FALSE)+ ylab("POCreate_to_Dock cycle time (days)") + xlab("Month Delivered and pidcount")+ labs(title="SPO PRD POCreate-to-Dock")
+  
   
   
   ## create discrete charts
-  dat11<-dat4[which(dat4$ProjectCategory=="Discrete"),]
   
   
   
   ## create network charts
-  dat21<-dat4[which(dat4$ProjectCategory=="Network"),]
+  ##dat21<-dat4[which(dat4$ProjectCategory=="Network"),]
   
   
 }

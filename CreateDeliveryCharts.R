@@ -9,10 +9,7 @@ library(reshape2)
 
 
 ##set the path to DeploymentPerformance file
-##path <- paste0("C:/Users/answami/Documents",
-##               "/WindowsPowerShell/Scripts/Deployments")
-path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data")
-
+path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
 
 ##define the deloyments file
 file1 <- "DeliveryPerformance.csv"
@@ -72,8 +69,7 @@ pids <- pids[which(as.character(pids$DeploymentClass) == "New Deployment"),]
 milestones <- milestones[which(as.character(milestones$DeploymentClass) == "New Deployment"),]
 
 ##define the EGs we want to evaluate
-EGList <- c("Azure", "O365 Exchange", "AP", "O365 SharePoint")
-##EGList <- c("Core Apps","CRM","FOPE","ISSD (Azure AAD)","O365 Lync","XBOX")
+EGList <- c("Azure", "O365 Exchange", "AP", "O365 SharePoint","CRM","XBOX","ISSD (Azure AAD)")
 
 ##select only Azure and EXO 
 pids <- pids[which(as.character(pids$EG) %in% EGList),]
@@ -147,16 +143,26 @@ halfyear <- c("2015-01","2015-02","2015-03",
               "2015-04","2015-05","2015-06",
               "2015-07", "2015-08", "2015-09")
 
-quarteryear <-c("2015-07", "2015-08", "2015-09")
+quarteryear <- c("2015-07", "2015-08", "2015-09","2015-10")
 
 ##take the time period in question
+##result <- result[which(result$rtegmonthname %in% halfyear),]
+##milestones <- milestones[which(milestones$rtegmonthname %in% halfyear),]
 result <- result[which(result$rtegmonthname %in% quarteryear),]
 milestones <- milestones[which(milestones$rtegmonthname %in% quarteryear),]
+#result <- result[which(result$rtegmonthname %in% fullyear),]
+#milestones <- milestones[which(milestones$rtegmonthname %in% fullyear),]
+
+##there are some absurd PIDs. remove everything that has a negative DTR
+pidexclude <- result$DeliveryNumber[which(result$DTR2 < 0)]
+if (length(pidexclude) != 0){ ## do only if there are absurd pids
+  result <- result[-(which(result$DeliveryNumber %in% pidexclude)),]
+  milestones <- milestones[-(which(milestones$DeliveryNumber %in% pidexclude)),]
+}
 
 
-##there are some absurd PIDs. drop it while we investigate what's going on
-result <- result[-(which(result$DeliveryNumber %in% c("435509", "406997"))),]
-milestones <- milestones[-(which(milestones$DeliveryNumber %in% c("435509", "406997"))),]
+#result <- result[-(which(result$DeliveryNumber %in% c("435509", "406997"))),]
+#milestones <- milestones[-(which(milestones$DeliveryNumber %in% c("435509", "406997"))),]
 
 ##calculate pidcount
 pidcount <- count(result, vars = c("EG", "as.factor(rtegmonthname)"))
@@ -296,7 +302,7 @@ plot3 <- plot3 + geom_hline(aes(yintercept = yintercept,
                             data = UCL, show_guide = FALSE)
 
 ## add another horizontal line for a 7 day DTR target
-target <- 7
+target <- 27
 tar <- data.frame( yintercept = target, UCL = factor(target))
 plot3 <- plot3 + geom_hline(aes(yintercept = yintercept, 
                                 linetype = tar),
@@ -382,21 +388,21 @@ plot4 <- plot4 + scale_x_discrete(name="")
 
 ##print graphs to PNG
 
-ggsave( "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/ControlChart.png",
+ggsave( "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ControlChart.png",
         plot3,
         width = 20,
         height = 10,
         dpi = 1200)
 
 
-ggsave( "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/Boxplots.png",
+ggsave( "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/Boxplots.png",
         plot1,
         width = 20,
         height = 10,
         dpi = 1200)
 
 
-ggsave( "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/MilestoneBoxplot.png",
+ggsave( "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/MilestoneBoxplot.png",
         plot4,
         width = 20,
         height = 10,
@@ -412,7 +418,7 @@ stats <- ddply(result,
 
 
 ##wtite stats to csv file
-write.csv(stats, "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/stats.csv")
+write.csv(stats, "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/stats.csv")
 
 #reshape milestone data for writing to file
 ##dump sequence number; we don't need it any more
@@ -420,7 +426,7 @@ milestones3$MilestoneSequenceNumber <- NULL
 milestones_wide <- dcast(milestones3, DeliveryNumber + rtegmonthname + EG ~ Milestone)
 
 ##write data files to csv files
-write.csv(result, "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/DockToRTEGPlotData.csv")
-write.csv(milestones_wide, "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/MilestoneCTPlotData.csv")
+write.csv(result, "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/DockToRTEGPlotData.csv")
+write.csv(milestones_wide, "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/MilestoneCTPlotData.csv")
 
 

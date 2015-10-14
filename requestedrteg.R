@@ -102,6 +102,9 @@ requestedrteg<-function(EGtype, filetype1){
   pidsnames <- gsub("\\.","",names(pids))
   colnames(pids) <- c(pidsnames)
   
+  spowavenames <-gsub("\\.","",names(spowaves))
+  colnames(spowaves) <-c(spowavenames)
+  
   ##remove underscores in header names in delpipe table
   ##delpipenames <- gsub("\\_","",names(delpipe))
   ##colnames(delpipe) <- c(delpipenames)
@@ -159,9 +162,14 @@ requestedrteg<-function(EGtype, filetype1){
   pids5<-pids4[which(pids4$ProjectCategory=="PRD"),]
   pids6<-pids5[which(pids5$EG=="O365 SharePoint"),]
   
+  ##label active pids and delivered pids by wave
+  pids7<-mutate(pids6, DeliveryStatus = "Delivered")
+  for(i in 1:nrow(pids7)){
+    if(is.na(pids7[i,]$rtegActualMonth))  pids7[i,]$DeliveryStatus <- c("Active")
+  }
 
   ##print output file
-  write.csv(pids6,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/ouput_rrteg_report.csv")
+  write.csv(pids6,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report.csv")
   
 
   ##calculate pidcount
