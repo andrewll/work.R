@@ -2,8 +2,8 @@ requestedrteg<-function(EGtype, filetype1){
   ########################
   ##
   ##  purpose: to build a report on performance against Requested Delivery Date (RTEG)
-  ##  The pids table is for delivered pids (looking backward to the past)
-  ##  The delpipe table is for active pids (looking forward to the future, an attempt at prediction)
+  ##  Provide the report in the weekly status meeting with SPO
+  ##  Measure how we're doing against the Requested RTEG, categorize according to the SPO waves
   ##
   ########################
   
@@ -122,6 +122,7 @@ requestedrteg<-function(EGtype, filetype1){
   ,p.RTEGActualDeliveryDate
   ,p.EG
   ,p.ProjectCategory
+  ,p.DeploymentClass
   ,p.DemandCreatedDate
   ,p.ProjectCreationDate
   ,p.POConfirmedDockDate
@@ -148,6 +149,7 @@ requestedrteg<-function(EGtype, filetype1){
                                     "DeliveryNumber",
                                     "ProjectTitle",
                                     "ProjectCategory",
+                                    "DeploymentClass",
                                     "ProjectCreationDate",
                                     "CurrentCommittedDockDate",
                                     "RequestedDeliveryDate",
@@ -158,10 +160,13 @@ requestedrteg<-function(EGtype, filetype1){
                                     "WaveCategory",
                                     "DTR"))
   
-  ##select only the desired categories and EG
-  pids5<-pids4[which(pids4$ProjectCategory=="PRD"),]
-  pids6<-pids5[which(pids5$EG=="O365 SharePoint"),]
+  ##select only the desired RTEG dates and EG. NA means the PID is still active
+  quarteryear <- c("2015-07", "2015-08", "2015-09","2015-10",NA)
   
+  ##take the time period in question and filter for just the desired EG
+  pids5<-pids4[which(pids4$rtegmonthname %in% quarteryear),]
+  pids6<-pids5[which(pids5$EG=="O365 SharePoint"),]
+    
   ##label active pids and delivered pids by wave
   pids7<-mutate(pids6, DeliveryStatus = "Delivered")
   for(i in 1:nrow(pids7)){
@@ -169,8 +174,8 @@ requestedrteg<-function(EGtype, filetype1){
   }
 
   ##print output file
-  write.csv(pids6,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report.csv")
-  
+  write.csv(pids7,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report.csv")
+
 
   ##calculate pidcount
   pidcount <- count(pids6, vars = c("EG", "as.factor(rtegmonthname)"))
