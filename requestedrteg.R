@@ -1,9 +1,12 @@
-requestedrteg<-function(EGtype, filetype1){
+requestedrteg<-function(){
   ########################
   ##
   ##  purpose: to build a report on performance against Requested Delivery Date (RTEG)
   ##  Provide the report in the weekly status meeting with SPO
   ##  Measure how we're doing against the Requested RTEG, categorize according to the SPO waves
+  ##
+  ##  For delivered pids, calculate the actual dock-to-RTEG
+  ##  For active pids, calculate the dock-to-RTEG based on CCDT and current date
   ##
   ########################
   
@@ -18,7 +21,7 @@ requestedrteg<-function(EGtype, filetype1){
   ##set the path to DeploymentPerformance file
   ##path <- paste0("C:/Users/answami/Documents",
   ##               "/WindowsPowerShell/Scripts/Deployments")
-  path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data")
+  path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
   
   
   ##define the deloyments file
@@ -30,7 +33,7 @@ requestedrteg<-function(EGtype, filetype1){
   ##define the milestone sequence file
   file4 <- "MilestoneSeq.csv"
   ##define SPO waves
-  file5 <- "SPO Waves.csv"
+  file5 <- "spowaves.csv"
   ##define Delivery Pipeline file
   file6 <- "C:/Users/andrewll/Documents/R/MCIOdata/All/DelPipe-10-5-alleg-networkandservers.csv"
   
@@ -125,8 +128,9 @@ requestedrteg<-function(EGtype, filetype1){
   ,p.DeploymentClass
   ,p.DemandCreatedDate
   ,p.ProjectCreationDate
-  ,p.POConfirmedDockDate
   ,p.DTR
+  ,p.ReceivingDate
+  ,p.POConfirmedDockDate
   ,p.CurrentCommittedDockDate
   ,p.RequestedDeliveryDate
   ,p.rtegActualMonth
@@ -137,6 +141,16 @@ requestedrteg<-function(EGtype, filetype1){
   ON p.DeliveryNumber = w.DeliveryNumber"
   
   pids2 <- sqldf(SQLQuery1)
+  
+  ##extract active pids where CurrentCommittedDockDate is not NULL
+  activepids<-pids2[which(is.na(pids$RTEGActualDeliveryDate)),]
+  activepids2<-activepids[which(!is.na(activepids$CurrentCommittedDockDate)),]
+  
+  ##calculate the DTR for active pids
+  CurrentDay <- as.Date(today())
+  activepids3<- activepids2 %>%
+    mutate(activedtr = CurrentDay - CurrentCommittedDockDate)%>%
+    arrange(desc(activedtr))
   
   ##create column for performance to RRTEG
   pids3 <- mutate(pids2, PerformanceToRequestedRTEG = DMEstimatedRTEGDate - RequestedDeliveryDate)
@@ -151,6 +165,8 @@ requestedrteg<-function(EGtype, filetype1){
                                     "ProjectCategory",
                                     "DeploymentClass",
                                     "ProjectCreationDate",
+                                    "ReceivingDate",
+                                    "POConfirmedDockDate",
                                     "CurrentCommittedDockDate",
                                     "RequestedDeliveryDate",
                                     "DMEstimatedRTEGDate",
@@ -173,13 +189,16 @@ requestedrteg<-function(EGtype, filetype1){
     if(is.na(pids7[i,]$rtegActualMonth))  pids7[i,]$DeliveryStatus <- c("Active")
   }
 
-  ##print output file
-  write.csv(pids7,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report.csv")
 
+  ##print output file for Delivered PIDs
+  write.csv(pids7,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report_delivered_pids.csv")
+
+  ##print output file for Active PIDs where Current Committed Dock Date is not NULL
+  write.csv(activepids3,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report_active_pids.csv")
 
   ##calculate pidcount
-  pidcount <- count(pids6, vars = c("EG", "as.factor(rtegmonthname)"))
-  names(pidcount) <- c("EG", "rtegmonthname", "pidcount")
+  ##pidcount <- count(pids6, vars = c("EG", "as.factor(rtegmonthname)"))
+  ##names(pidcount) <- c("EG", "rtegmonthname", "pidcount")
   
   
 }

@@ -1,19 +1,24 @@
-simulaterteg<-function(projcategory){
+cycletime2<-function(){
   
-  #########################
+  #################
   ##
-  ## purpose: to run monte carlo simulations of the milestone data for PRD deployments, 
-  ## to ultimately help forecast the DM Estimated RTEG date, and to determine which milestones to target first to get down
-  ## to a target DTR cycletime
+  ##  Purpose: calculate cycle time for 3 major phases: PIDCreate-to-POCreate, POCreate-to-POApprove, POApprove-to-Dock, Dock-to-RTEG
+  ##  This is a derivative of both the simulaterteg script and the cycletime script
   ##
-  #########################
+  #################
+  
   
   library(dplyr)
+  library(lubridate)
   
   EGList <- c("O365 Exchange", "AP", "O365 SharePoint","CRM","XBOX","ISSD (Azure AAD)")
   
-  ## read data
+  ## read data containing milestone and PO information
   dat1 <- read.csv("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in/DeliveryPerformanceWithMilestone.csv", stringsAsFactors = TRUE)
+  
+  ##read data containing pidcreate information
+  mydf<-read.csv("C:/Users/andrewll/Documents/R/MCIOdata/All/DelCap-Jul1-Oct26-alleg-networkandservers.csv", stringsAsFactors = FALSE)
+  
   
   ##convert dates into correct format
   dat1$RTEGActualDeliveryDate <- as.Date(dat1$RTEGActualDeliveryDate, format = "%m/%d/%Y")
@@ -22,11 +27,10 @@ simulaterteg<-function(projcategory){
   ##convert Delivery Number to correct format
   dat1$DeliveryNumber<-as.character(dat1$DeliveryNumber)
   
-
+  
   ##remove dots in header names in pids table
   pidsnames <- gsub("\\.","",names(dat1))
   colnames(dat1) <- c(pidsnames)
-  
   
   ## select desired variables
   dat2<- subset(dat1, select = c("DeliveryNumber"
@@ -43,32 +47,15 @@ simulaterteg<-function(projcategory){
                                  ,"PhysicalCablingValue" 
                                  ,"ConfigureVerifyNetworkValue"
                                  ,"OperationalAcceptanceValue"
-                                 ,"WoadDock"))
+                                 ,"WoadDock"
+                                 ,"MaxPOCreateDate"
+                                 ,"MaxPOApproveDate"))
   
-  #remove duplicate entries
-  dat3<-unique(dat2)
+  mydf2<- subset(mydf, select = c("DeliveryNumber"
+                                  ,"DemandCreatedDate"
+                                  ,"ProjectCreationDate"))
   
-  ##extract PRD objects
-  ##dat4<-dat3[which(dat3$ProjectCategory==projcategory),]
-  dat4<-dat3[which(dat3$ProjectCategory=="PRD"),]
-  dat5<-dat4[which(as.character(dat4$EG) %in% EGList),]
-  
-  ##calculate dock-to-rteg
-  dat6<-mutate(dat5, DTR = as.numeric(RTEGActualDeliveryDate - WoadDock), rtegmonthname = format(as.Date(RTEGActualDeliveryDate), "%Y-%m"))
-  
-  ##mark negative values in DTR as NA
-  for(i in 1:nrow(dat6)){
-    if(is.na(dat6[i,]$DTR)){
-      dat6[i,]$DTR<-c(NA)
-    }else if(dat6[i,]$DTR<0){
-      dat6[i,]$DTR<-c(NA)
-      }
-  }
-  
-  #write output file
-  write.csv(dat6,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/simulaterteg-input-file.csv")
-  
-  
+  ##merge the two dataframes
   
   
 }
