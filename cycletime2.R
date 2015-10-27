@@ -8,54 +8,57 @@ cycletime2<-function(){
   #################
   
   
+  library(ggplot2)
   library(dplyr)
+  library(sqldf)
+  library(scales)
+  library(reshape2)
   library(lubridate)
   
   EGList <- c("O365 Exchange", "AP", "O365 SharePoint","CRM","XBOX","ISSD (Azure AAD)")
   
   ## read data containing milestone and PO information
-  dat1 <- read.csv("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in/DeliveryPerformanceWithMilestone.csv", stringsAsFactors = TRUE)
+  dat <- read.csv("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in/DeliveryPerformanceWithMilestone.csv", stringsAsFactors = TRUE)
   
   ##read data containing pidcreate information
   mydf<-read.csv("C:/Users/andrewll/Documents/R/MCIOdata/All/DelCap-Jul1-Oct26-alleg-networkandservers.csv", stringsAsFactors = FALSE)
   
   
-  ##convert dates into correct format
-  dat1$RTEGActualDeliveryDate <- as.Date(dat1$RTEGActualDeliveryDate, format = "%m/%d/%Y")
-  dat1$Woad.Dock<- as.Date(dat1$Woad.Dock, format = "%m/%d/%Y")
+
   
   ##convert Delivery Number to correct format
-  dat1$DeliveryNumber<-as.character(dat1$DeliveryNumber)
-  
+  dat$DeliveryNumber<-as.character(dat$DeliveryNumber)
+  mydf$DeliveryNumber<-as.character(mydf$DeliveryNumber)
   
   ##remove dots in header names in pids table
-  pidsnames <- gsub("\\.","",names(dat1))
-  colnames(dat1) <- c(pidsnames)
-  
-  ## select desired variables
-  dat2<- subset(dat1, select = c("DeliveryNumber"
-                                 ,"DeploymentClass"
-                                 ,"EG"
-                                 ,"ProjectCategory"
-                                 ,"DataCenter"
-                                 ,"RTEGActualDeliveryDate"
-                                 ,"NetworkReadinessValue"
-                                 ,"DCReadinessValue"
-                                 ,"ProcurementValue"
-                                 ,"ReceivingValue"
-                                 ,"BoltandEnergizeValue"
-                                 ,"PhysicalCablingValue" 
-                                 ,"ConfigureVerifyNetworkValue"
-                                 ,"OperationalAcceptanceValue"
-                                 ,"WoadDock"
-                                 ,"MaxPOCreateDate"
-                                 ,"MaxPOApproveDate"))
-  
-  mydf2<- subset(mydf, select = c("DeliveryNumber"
-                                  ,"DemandCreatedDate"
-                                  ,"ProjectCreationDate"))
+  pidsnames <- gsub("\\.","",names(dat))
+  colnames(dat) <- c(pidsnames)
   
   ##merge the two dataframes
+  SQLQuery1 <- "SELECT p.DeliveryNumber
+  ,p.ProjectTitle
+  ,p.RTEGActualDeliveryDate
+  ,p.RequestedDeliveryDate
+  ,p.EG
+  ,p.ProjectCategory
+  ,p.DeploymentClass
+  ,w.DemandCreatedDate
+  ,w.ProjectCreationDate
+  ,w.DTR1
+  ,w.woadDock2
+  ,p.MaxPOCreateDate
+  ,p.MaxPOApproveDate
+  FROM dat p
+  LEFT JOIN mydf w 
+  ON p.DeliveryNumber = w.DeliveryNumber"
+  
+  pids <- sqldf(SQLQuery1)
+  
+  ##convert dates into correct format
+  pids$RTEGActualDeliveryDate <- as.Date(pids$RTEGActualDeliveryDate, format = "%m/%d/%Y")
+  pids$woadDock2<- as.Date(pids$woadDock2, format = "%m/%d/%Y")
+  
+  
   
   
 }
