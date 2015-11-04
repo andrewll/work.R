@@ -11,7 +11,7 @@ requestedrteg<-function(){
   ########################
   
   library(ggplot2)
-  library(plyr)
+  library(dplyr)
   library(sqldf)
   library(scales)
   library(reshape2)
@@ -35,7 +35,7 @@ requestedrteg<-function(){
   ##define SPO waves
   file5 <- "spowaves.csv"
   ##define Delivery Pipeline file
-  file6 <- "C:/Users/andrewll/Documents/R/MCIOdata/All/DelPipe-10-5-alleg-networkandservers.csv"
+  ##file6 <- "C:/Users/andrewll/Documents/R/MCIOdata/All/DelPipe-10-5-alleg-networkandservers.csv"
   
   ##define the Deployments file path
   file_loc1 <- file.path(path, file1)
