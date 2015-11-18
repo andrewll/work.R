@@ -2,7 +2,7 @@ cycletime2<-function(){
   
   #################
   ##
-  ##  Purpose: calculate cycle time for 3 major phases: PIDCreate-to-POCreate, POCreate-to-POApprove, POApprove-to-Dock, Dock-to-RTEG
+  ##  Purpose: calculate cycle time for 4 major phases: PIDCreate-to-POCreate, POCreate-to-POApprove, POApprove-to-Dock, Dock-to-RTEG
   ##  This is a derivative of both the simulaterteg script and the cycletime script
   ##
   #################
@@ -16,15 +16,17 @@ cycletime2<-function(){
   library(lubridate)
   
   ##EGList <- c("O365 Exchange", "AP", "O365 SharePoint","CRM","XBOX","ISSD (Azure AAD)")
-  ##EGList <- c("O365 SharePoint","O365 Exchange")
-  ##EGList <- c("O365 Exchange")
-  EGList <- c("Networking")
+  ##EGList <- c("O365 SharePoint")
+  EGList <- c("O365 Exchange")
+  ##EGList <- c("Networking")
   
   ## read data containing milestone and PO information
   dat <- read.csv("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in/DeliveryPerformanceWithMilestone.csv", stringsAsFactors = TRUE)
   
   ##read data containing pidcreate information
-  mydf<-read.csv("C:/Users/andrewll/Documents/R/MCIOdata/All/DelCap-Jul1-Oct26-alleg-networkandservers.csv", stringsAsFactors = FALSE)
+  ##mydf<-read.csv("C:/Users/andrewll/Documents/R/MCIOdata/All/DelCapDelPipe-Jan1-Nov17-EXO-networkandservers.csv", stringsAsFactors = FALSE)
+  mydf<-read.csv("C:/Users/andrewll/Documents/R/MCIOdata/All/DelCap-Jan1-Nov17-alleg-networkandservers.csv", stringsAsFactors = FALSE)
+  
   
   ##convert Delivery Number to correct format
   dat$DeliveryNumber<-as.character(dat$DeliveryNumber)
@@ -47,7 +49,7 @@ cycletime2<-function(){
   ,w.woadDock2
   ,p.MaxPOCreateDate
   ,p.MaxPOApproveDate
-  ,w.DTR1
+  ,w.DTR
   FROM dat p
   LEFT JOIN mydf w 
   ON p.DeliveryNumber = w.DeliveryNumber"
@@ -59,13 +61,15 @@ cycletime2<-function(){
   pids$RequestedDeliveryDate<- as.Date(pids$RequestedDeliveryDate, format = "%m/%d/%Y")
   pids$DemandCreatedDate<- as.Date(pids$DemandCreatedDate, format = "%m/%d/%Y")
   pids$ProjectCreationDate<- as.Date(pids$ProjectCreationDate, format = "%m/%d/%Y")
+  ##pids$ReceivingDate<- as.Date(pids$ReceivingDate, format = "%m/%d/%Y")
   pids$woadDock2<- as.Date(pids$woadDock2, format = "%m/%d/%Y")
   pids$MaxPOCreateDate<- as.Date(pids$MaxPOCreateDate, format = "%m/%d/%Y")
   pids$MaxPOApproveDate<- as.Date(pids$MaxPOApproveDate, format = "%m/%d/%Y")
   
   ##extract delivered pids from July 1st onwards
   pids2<-pids[which(pids$ProjectCategory=="PRD"),]
-  pids3<-pids2[which(pids2$RTEGActualDeliveryDate>'2015-06-30'),]
+  pids3<-pids2[which(pids2$woadDock2>'2015-01-01'),]
+  ##pids3<-pids2[which(pids2$RTEGActualDeliveryDate>'2015-06-30'),]
   
   ##extract for desired EG
   pids4<-pids3[which(pids3$EG %in% EGList),]
@@ -82,7 +86,8 @@ cycletime2<-function(){
                   Month_Docked = format(woadDock2, "%Y-%m"),
                   PIDCount = 1)
   
-  pids8 <- mutate(pids7, pidcreate_to_pocreate = as.numeric(MaxPOCreateDate - ProjectCreationDate), 
+  pids8 <- mutate(pids7, demandcreate_to_pidcreate = as.numeric(ProjectCreationDate - DemandCreatedDate),
+                  pidcreate_to_pocreate = as.numeric(MaxPOCreateDate - ProjectCreationDate), 
                  pocreate_to_poapprove = as.numeric(MaxPOApproveDate - MaxPOCreateDate),
                  poapprove_to_dock = as.numeric(woadDock2 - MaxPOApproveDate))
   
@@ -92,6 +97,7 @@ cycletime2<-function(){
                                     ,"ProjectTitle"
                                     ,"ProjectCategory"
                                     ,"DeploymentClass"
+                                    ,"DemandCreatedDate"
                                     ,"ProjectCreationDate"
                                     ,"MaxPOCreateDate"
                                     ,"MaxPOApproveDate"
@@ -101,10 +107,11 @@ cycletime2<-function(){
                                     ,"Month_Docked"
                                     ,"Year_Delivered"
                                     ,"Month_Delivered"
+                                    ,"demandcreate_to_pidcreate"
                                     ,"pidcreate_to_pocreate"
                                     ,"pocreate_to_poapprove"
                                     ,"poapprove_to_dock"
-                                    ,"DTR1"
+                                    ,"DTR"
                                     ))
   pids10 <- arrange(pids9,EG, Year_Delivered, Month_Delivered)
   
@@ -126,8 +133,8 @@ cycletime2<-function(){
               pocreate_to_poapprove_95th = quantile(pocreate_to_poapprove, .95, na.rm = TRUE),
               poapprove_to_dock_avg = mean(poapprove_to_dock, na.rm = TRUE),
               poapprove_to_dock_95th = quantile(poapprove_to_dock, .95, na.rm = TRUE),
-              Dock_to_RTEG_Avg = mean(DTR1, na.rm=TRUE),  
-              Dock_to_RTEG_95th = quantile(DTR1, .95, na.rm=TRUE)) %>%
+              Dock_to_RTEG_Avg = mean(DTR, na.rm=TRUE),  
+              Dock_to_RTEG_95th = quantile(DTR, .95, na.rm=TRUE)) %>%
     arrange(EG, ProjectCategory, Year_Delivered, Month_Delivered)
   
   
