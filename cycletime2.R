@@ -16,8 +16,8 @@ cycletime2<-function(){
   library(lubridate)
   
   ##EGList <- c("O365 Exchange", "AP", "O365 SharePoint","CRM","XBOX","ISSD (Azure AAD)")
-  ##EGList <- c("O365 SharePoint")
-  EGList <- c("O365 Exchange")
+  EGList <- c("O365 Exchange","O365 SharePoint")
+  ##EGList <- c("O365 Exchange")
   ##EGList <- c("Networking")
   
   ## read data containing milestone and PO information
@@ -25,7 +25,7 @@ cycletime2<-function(){
   
   ##read data containing pidcreate information
   ##mydf<-read.csv("C:/Users/andrewll/Documents/R/MCIOdata/All/DelCapDelPipe-Jan1-Nov17-EXO-networkandservers.csv", stringsAsFactors = FALSE)
-  mydf<-read.csv("C:/Users/andrewll/Documents/R/MCIOdata/All/DelCap-Jan1-Nov17-alleg-networkandservers.csv", stringsAsFactors = FALSE)
+  mydf<-read.csv("C:/Users/andrewll/Documents/R/MCIOdata/All/DelCap-Jul1-Nov20-alleg-networkandservers.csv", stringsAsFactors = FALSE)
   
   
   ##convert Delivery Number to correct format
