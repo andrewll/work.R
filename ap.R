@@ -27,9 +27,11 @@ ap<-function(){
   desiredDeploymentClass<-c("New Deployment")
   desiredProjectCategory<-c("PRD","Discrete","Network","SAN","ITPAC")
   
-  ##set Von's variables
+  ##set variables
   voneg<-c("AP")
   vonpg<-c("Azure ECN", "Search")
+  lorindaeg<-c("AP","Not Set","Default","NonWebComm")
+  loringapg<-c("Cosmos","Search")
   
   ##read data 
   pids<-read.csv("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in/DeliveryProjectStatusReport.csv", stringsAsFactors = FALSE)
@@ -77,7 +79,37 @@ ap<-function(){
   pidsvon3<-pidsvon[which(pidsvon$PropertyGroup %in% vonpg),]
   pidsvon5<-pidsvon3[which(pidsvon3$DeploymentClass %in% desiredDeploymentClass),]
   pidsvon7<-pidsvon5[which(pidsvon5$ProjectCategory %in% desiredProjectCategory),]
-
+  
+  ##replace Von's variables with correct ones
+  pidsvon7$EG[which(grepl("Edge", pidsvon7$ProjectTitle) == TRUE)] <- "Azure"
+  pidsvon7$PropertyGroup[which(grepl("Edge", pidsvon7$ProjectTitle) == TRUE)] <- "Azure Edge"
+  pidsvon7$EG[which(pidsvon7$PropertyGroup == "Azure ECN")] <- "Azure"
+  
+  ##calculate cycle time numbers for Von
+  pidsvon9 <- mutate(pidsvon7, Year_Delivery_Est = format(DMEstimatedRTEGDate,"%Y"), 
+                    Month_Delivery_Est = format(DMEstimatedRTEGDate, "%Y-%m"),
+                    Month_Docked = format(WorkOrderActualDockDate, "%Y-%m"),
+                    PIDCount = 1)
+  
+  pidsvon11 <- mutate(pidsvon9, demandcreate_to_pidcreate = as.numeric(ProjectCreationDate - DemandCreatedDate),
+                  pidcreate_to_pocreate = as.numeric(POCreatedDate - ProjectCreationDate), 
+                  pocreate_to_poapprove = as.numeric(POApprovedDate - POCreatedDate),
+                  poapprove_to_dock = as.numeric(WorkOrderActualDockDate - POApprovedDate),
+                  dock_to_rteg_est = as.numeric(DMEstimatedRTEGDate - WorkOrderActualDockDate))
+  
+  
+  ##extract Lorinda's pids based on Von's pre-set variables
+  pidslorinda<-pids5[which(pids5$EG %in% lorindaeg),]
+  pidslorinda3<-pidslorinda[which(pidslorinda$PropertyGroup %in% lorindapg),]
+  pidslorinda5<-pidslorinda3[which(pidslorinda3$DeploymentClass %in% desiredDeploymentClass),]
+  pidslorinda7<-pidslorinda5[which(pidslorinda5$ProjectCategory %in% desiredProjectCategory),]
+  
+  
+  
+  
+  ##output Von's dataframe
+  write.csv(pidsvon11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidsvon.csv")
+  
   
   
   

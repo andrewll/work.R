@@ -16,7 +16,7 @@ cycletime2<-function(){
   library(lubridate)
   
   ##EGList <- c("O365 Exchange", "AP", "O365 SharePoint","CRM","XBOX","ISSD (Azure AAD)")
-  EGList <- c("O365 Exchange","O365 SharePoint")
+  EGList <- c("O365 SharePoint")
   ##EGList <- c("O365 Exchange")
   ##EGList <- c("Networking")
   
