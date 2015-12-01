@@ -31,7 +31,7 @@ ap<-function(){
   voneg<-c("AP")
   vonpg<-c("Azure ECN", "Search")
   lorindaeg<-c("AP","Not Set","Default","NonWebComm")
-  loringapg<-c("Cosmos","Search")
+  lorindapg<-c("Cosmos","Search","TechOps", "Visual Studio Cloud Services (QBuild)", "Sustained Engineering", "OneDrive")
   
   ##read data 
   pids<-read.csv("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in/DeliveryProjectStatusReport.csv", stringsAsFactors = FALSE)
@@ -104,11 +104,17 @@ ap<-function(){
   pidslorinda5<-pidslorinda3[which(pidslorinda3$DeploymentClass %in% desiredDeploymentClass),]
   pidslorinda7<-pidslorinda5[which(pidslorinda5$ProjectCategory %in% desiredProjectCategory),]
   
+  ##replace Von's variables with correct ones
+  pidslorinda7$EG[which(pidslorinda7$EG=="Not Set" & pidslorinda7$PropertyGroup=="TechOps" & pidslorinda7$DPM=="Aeryn White")] <- "AP"
+  pidslorinda7$EG[which(pidslorinda7$EG=="Default" & pidslorinda7$PropertyGroup=="Visual Studio Cloud Services (QBuild)" & pidslorinda7$DPM=="Aeryn White")] <- "AP"
+  pidslorinda7$EG[which(pidslorinda7$EG=="Not Set" & pidslorinda7$PropertyGroup=="Sustained Engineering" & pidslorinda7$DPM=="Aeryn White")] <- "AP"
+  pidslorinda7$EG[which(pidslorinda7$EG=="NonWebComm" & pidslorinda7$PropertyGroup=="OneDrive" & pidslorinda7$DPM=="Aeryn White")] <- "AP"
+  pidslorinda9<-pidslorinda7[which(pidslorinda7$PropertyGroup %in% lorindapg),]
   
   
-  
-  ##output Von's dataframe
+  ##output all dataframe
   write.csv(pidsvon11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidsvon.csv")
+  write.csv(pidslorinda7,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidslorinda.csv")
   
   
   
