@@ -17,11 +17,11 @@ ap<-function(){
   library(lubridate)
   
   ##set the EG variable
-  ##EGList <- c("O365 Exchange", "AP", "O365 SharePoint","CRM","XBOX","ISSD (Azure AAD)")
+  EGList <- c("O365 Exchange", "AP", "O365 SharePoint","CRM","XBOX","ISSD (Azure AAD)")
   ##EGList <- c("O365 Exchange","O365 SharePoint")
   ##EGList <- c("O365 Exchange")
   ##EGList <- c("Networking")
-  EGList <- c("AP", "Not Set", "Default", "NonWebComm")
+  ##EGList <- c("AP", "Not Set", "Default", "NonWebComm")
   
   ##set DeploymentClass and ProjectCategory variables
   desiredDeploymentClass<-c("New Deployment")
@@ -32,6 +32,7 @@ ap<-function(){
   vonpg<-c("Azure ECN", "Search")
   lorindaeg<-c("AP","Not Set","Default","NonWebComm")
   lorindapg<-c("Cosmos","Search","TechOps", "Visual Studio Cloud Services (QBuild)", "Sustained Engineering", "OneDrive")
+  sandeepeg<-c("XBOX","ISSD (Azure AAD)")
   
   ##read data 
   pids<-read.csv("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in/DeliveryProjectStatusReport.csv", stringsAsFactors = FALSE)
@@ -98,25 +99,51 @@ ap<-function(){
                   dock_to_rteg_est = as.numeric(DMEstimatedRTEGDate - WorkOrderActualDockDate))
   
   
-  ##extract Lorinda's pids based on Von's pre-set variables
+  ##extract Lorinda's pids based on Lorinda's pre-set variables
   pidslorinda<-pids5[which(pids5$EG %in% lorindaeg),]
   pidslorinda3<-pidslorinda[which(pidslorinda$PropertyGroup %in% lorindapg),]
   pidslorinda5<-pidslorinda3[which(pidslorinda3$DeploymentClass %in% desiredDeploymentClass),]
   pidslorinda7<-pidslorinda5[which(pidslorinda5$ProjectCategory %in% desiredProjectCategory),]
   
-  ##replace Von's variables with correct ones
+  ##replace Lorinda's variables with correct ones
   pidslorinda7$EG[which(pidslorinda7$EG=="Not Set" & pidslorinda7$PropertyGroup=="TechOps" & pidslorinda7$DPM=="Aeryn White")] <- "AP"
   pidslorinda7$EG[which(pidslorinda7$EG=="Default" & pidslorinda7$PropertyGroup=="Visual Studio Cloud Services (QBuild)" & pidslorinda7$DPM=="Aeryn White")] <- "AP"
   pidslorinda7$EG[which(pidslorinda7$EG=="Not Set" & pidslorinda7$PropertyGroup=="Sustained Engineering" & pidslorinda7$DPM=="Aeryn White")] <- "AP"
   pidslorinda7$EG[which(pidslorinda7$EG=="NonWebComm" & pidslorinda7$PropertyGroup=="OneDrive" & pidslorinda7$DPM=="Aeryn White")] <- "AP"
   pidslorinda9<-pidslorinda7[which(pidslorinda7$PropertyGroup %in% lorindapg),]
+  pidslorinda11<-pidslorinda9[which(pidslorinda9$DPM=="Aeryn White"),]
   
+  ##calculate cycle time numbers for Lorinda
+  pidslorinda13 <- mutate(pidslorinda11, Year_Delivery_Est = format(DMEstimatedRTEGDate,"%Y"), 
+                     Month_Delivery_Est = format(DMEstimatedRTEGDate, "%Y-%m"),
+                     Month_Docked = format(WorkOrderActualDockDate, "%Y-%m"),
+                     PIDCount = 1)
   
+  pidslorinda15 <- mutate(pidslorinda13, demandcreate_to_pidcreate = as.numeric(ProjectCreationDate - DemandCreatedDate),
+                      pidcreate_to_pocreate = as.numeric(POCreatedDate - ProjectCreationDate), 
+                      pocreate_to_poapprove = as.numeric(POApprovedDate - POCreatedDate),
+                      poapprove_to_dock = as.numeric(WorkOrderActualDockDate - POApprovedDate),
+                      dock_to_rteg_est = as.numeric(DMEstimatedRTEGDate - WorkOrderActualDockDate))
+  
+  ##extract Sandeep's pids based on Sandeep's pre-set variables
+  pidssandeep<-pids5[which(pids5$EG %in% sandeepeg),]
+  pidssandeep3<-pidssandeep[which(pidssandeep$DeploymentClass %in% desiredDeploymentClass),]
+  pidssandeep5<-pidssandeep3[which(pidssandeep3$ProjectCategory %in% desiredProjectCategory),]
+  
+  ##calculate cycle time numbers for Sandeep
+  pidssandeep7 <- mutate(pidssandeep5, Year_Delivery_Est = format(DMEstimatedRTEGDate,"%Y"), 
+                          Month_Delivery_Est = format(DMEstimatedRTEGDate, "%Y-%m"),
+                          Month_Docked = format(WorkOrderActualDockDate, "%Y-%m"),
+                          PIDCount = 1)
+  
+  pidssandeep9 <- mutate(pidssandeep7, demandcreate_to_pidcreate = as.numeric(ProjectCreationDate - DemandCreatedDate),
+                          pidcreate_to_pocreate = as.numeric(POCreatedDate - ProjectCreationDate), 
+                          pocreate_to_poapprove = as.numeric(POApprovedDate - POCreatedDate),
+                          poapprove_to_dock = as.numeric(WorkOrderActualDockDate - POApprovedDate),
+                          dock_to_rteg_est = as.numeric(DMEstimatedRTEGDate - WorkOrderActualDockDate))
   ##output all dataframe
   write.csv(pidsvon11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidsvon.csv")
-  write.csv(pidslorinda7,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidslorinda.csv")
-  
-  
-  
+  write.csv(pidslorinda15,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidslorinda.csv")
+  write.csv(pidssandeep9,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidssandeep.csv")
   
 }

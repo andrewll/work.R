@@ -21,7 +21,7 @@ expldata<-function(){
   dat2<-tbl_df(dat)
   
   ##convert to Date variable to date format
-  dat2$Date<-as.Date(dat2$Date, format = "%m/%d/%Y")
+  ##dat2$Date<-as.Date(dat2$Date, format = "%m/%d/%Y")
   dat2$Date<-dmy(dat2$Date)
   
   ##subset to desired dates
@@ -43,14 +43,14 @@ expldata<-function(){
   dat6<-mutate(dat5, date_time = Date+hrsminsec)
 
   ##Plot 1 - histogram
-  hist(subset(dat6)$Global_active_power, col = "red", main = "Global Active Power")
+  hist(subset(dat6)$Global_active_power, col = "red", main = "Global Active Power", xlab = "Globa Active Power (kilowatts)")
   
   ##plot2
-  g<-ggplot(data = dat6, aes(x=date_time, y=Global_active_power))
-  g+geom_line()
+  with(dat6, plot(date_time, Global_active_power, type="l", ylab = "Global Active Power (kilowatts)"))
+  
   
   ##plot3
-  
+  ##course notes page 8
   
   
 }
