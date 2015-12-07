@@ -1,4 +1,4 @@
-ap<-function(){
+apct<-function(){
   
   ###############################
   ##
@@ -71,7 +71,7 @@ ap<-function(){
   pids3<-pids[which(pids$EG %in% EGList),]
   
   ##select desired variables
-  pids5<-subset(pids3, select = c("DeliveryNumber"
+  pids5<-subset(pids, select = c("DeliveryNumber"
                                     ,"EG"
                                     ,"PropertyGroup"
                                     ,"DPM"

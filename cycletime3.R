@@ -59,7 +59,7 @@ cycletime3<-function(){
   pids$RTEGActualDeliveryDate <- as.Date(pids$RTEGActualDeliveryDate, format = "%m/%d/%Y")
   pids$DMEstimatedRTEGDate <- as.Date(pids$DMEstimatedRTEGDate, format = "%m/%d/%Y")
   pids$DemandCreatedDate<- as.Date(pids$DemandCreatedDate, format = "%m/%d/%Y")
-  pids$ProjectCreationDate<- as.Date(pids$ProjectCreationDate)
+  pids$ProjectCreationDate<- as.Date(pids$ProjectCreationDate, format = "%m/%d/%Y")
   pids$ReceivingDate<- as.Date(pids$ReceivingDate, format = "%m/%d/%Y")
   pids$WorkOrderActualDockDate<- as.Date(pids$WorkOrderActualDockDate, format = "%m/%d/%Y")
   pids$POCreatedDate<- as.Date(pids$POCreatedDate, format = "%m/%d/%Y")

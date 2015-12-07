@@ -35,6 +35,7 @@ expldata<-function(){
   dat4$Global_intensity<-as.numeric(dat4$Global_intensity)
   dat4$Sub_metering_1<-as.numeric(dat4$Sub_metering_1)
   dat4$Sub_metering_2<-as.numeric(dat4$Sub_metering_2)
+  dat4$Sub_metering_3<-as.numeric(dat4$Sub_metering_3)
   
   ##create weekday variable, and convert hours_minutes_second to posix format
   dat5<-mutate(dat4, weekday = format(Date, "%a"), hrsminsec = hms(Time))
@@ -48,9 +49,14 @@ expldata<-function(){
   ##plot2
   with(dat6, plot(date_time, Global_active_power, type="l", ylab = "Global Active Power (kilowatts)"))
   
-  
   ##plot3
-  ##course notes page 8
+  with(dat6, plot(Sub_metering_1, type="l", ylab = "Energy sub metering", xlab = ""))
+  with(subset(dat6), points(Sub_metering_2, type = "l", col = "red"))
+  with(subset(dat6), points(Sub_metering_3, type = "l", col = "blue"))
+  legend("topright", pch = 1, col = c("black", "red","blue"), legend = c("Sub_metering_1","Sub_metering_2","Sub_metering_3"))
   
+  ##plot4
+  with(dat6, plot(date_time, Voltage, type="l", ylab = "Voltage"))
+  with(dat6, plot(date_time, Global_reactive_power, type="l", ylab = "Global_reactive_power"))
   
 }

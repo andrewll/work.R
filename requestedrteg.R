@@ -26,6 +26,7 @@ requestedrteg<-function(){
   
   ##define the deloyments file
   file1 <- "DeliveryPerformance.csv"
+  ##file1 <- "DeliveryProjectStatusReport.csv"
   ##define Azure deliveries file
   file2 <- "AzureDeliveries.csv"
   ##define the milestone file
@@ -177,7 +178,7 @@ requestedrteg<-function(){
                                     "DTR"))
   
   ##select only the desired RTEG dates and EG. NA means the PID is still active
-  quarteryear <- c("2015-07", "2015-08", "2015-09","2015-10",NA)
+  quarteryear <- c("2015-07", "2015-08", "2015-09","2015-10","2015-11", "2015-12")
   
   ##take the time period in question and filter for just the desired EG
   pids5<-pids4[which(pids4$rtegmonthname %in% quarteryear),]
