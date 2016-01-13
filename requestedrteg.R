@@ -125,6 +125,7 @@ requestedrteg<-function(){
   ,p.ProjectTitle
   ,p.RTEGActualDeliveryDate
   ,p.EG
+  ,p.DataCenter
   ,p.ProjectCategory
   ,p.DeploymentClass
   ,p.DemandCreatedDate
@@ -136,6 +137,7 @@ requestedrteg<-function(){
   ,p.RequestedDeliveryDate
   ,p.rtegActualMonth
   ,p.DMEstimatedRTEGDate
+  ,p.CommittedDeliveryDate
   ,w.WaveCategory
   FROM pids p
   LEFT JOIN spowaves w 
@@ -167,8 +169,10 @@ requestedrteg<-function(){
                                     "DeploymentClass",
                                     "ProjectCreationDate",
                                     "ReceivingDate",
+                                    "DataCenter",
                                     "POConfirmedDockDate",
                                     "CurrentCommittedDockDate",
+                                    "CommittedDeliveryDate", 
                                     "RequestedDeliveryDate",
                                     "DMEstimatedRTEGDate",
                                     "PerformanceToRequestedRTEG",
@@ -178,11 +182,11 @@ requestedrteg<-function(){
                                     "DTR"))
   
   ##select only the desired RTEG dates and EG. NA means the PID is still active
-  quarteryear <- c("2015-07", "2015-08", "2015-09","2015-10","2015-11", "2015-12")
+  ##quarteryear <- c("2015-07", "2015-08", "2015-09","2015-10","2015-11", "2015-12")
   
   ##take the time period in question and filter for just the desired EG
-  pids5<-pids4[which(pids4$rtegmonthname %in% quarteryear),]
-  pids6<-pids5[which(pids5$EG=="O365 SharePoint"),]
+  ##pids5<-pids4[which(pids4$rtegmonthname %in% quarteryear),]
+  pids6<-pids4[which(pids4$EG=="O365 SharePoint"),]
     
   ##label active pids and delivered pids by wave
   pids7<-mutate(pids6, DeliveryStatus = "Delivered")
