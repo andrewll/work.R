@@ -65,25 +65,36 @@ delproj4<-function(){
   pids2<-pids[which(!is.na(pids$EG)),]
   
   ##Create month column
-  pids3<-subset(pids2,select=c("EG","DeliveryNumber","ProjectTitle","RTEGOTDF","RTEGActualDeliveryDate","DMEstimatedRTEGDate","CommittedDeliveryDate"))
+  pids3<-subset(pids2,select=c("EG","DeliveryNumber","ProjectTitle","ProjectCategory","RTEGOTDF","RTEGActualDeliveryDate","DMEstimatedRTEGDate","CommittedDeliveryDate"))
   pids4<-tbl_df(pids3)
-  pids5<-mutate(pids4,count_towards_month = format(ymd(RTEGActualDeliveryDate),"%b")) ##takes Committed RTEG as value for count_towards_month by default
+  pids5<-mutate(pids4,count_towards_month = format(ymd(RTEGActualDeliveryDate),"%b")) ##takes actual RTEG date as value for count_towards_month by default
   
   ##Set count_towards_month based on DM Est RTEG Date
   for(i in 1:nrow(pids5)){
-    if(pids5[i,4]=="Active"){ ##RTEGOTDF="Active" means RTEGActualDeliveryDate is NULL and DMEstRTEG should not be NULL
-      pids5[i,8]<-format(pids5[i,6],"%b")
+    if(pids5[i,5]=="Active"){ ##RTEGOTDF="Active" means RTEGActualDeliveryDate is NULL and DMEstRTEG should not be NULL
+      pids5[i,9]<-format(pids5[i,7],"%b")  ##use DM Est RTEG to set count towards month
     } 
   }
   
   
   ##Calculate count_towards_month for instances where DM_Est_RTEG is greater than Committed RTEG
   for(i in 1:nrow(pids5)){
-    if(pids5[i,4]=="Active"&&!is.na(pids5[i,6])&&!is.na(pids5[i,7])){
-      if(pids5[i,6] > pids5[i,7]) pids5[i,8]<-format(pids5[i,6],"%b") ##set count_towards_month 
+    if(pids5[i,5]=="Active"&&!is.na(pids5[i,7])&&!is.na(pids5[i,7])){
+      if(pids5[i,7] > pids5[i,8]) pids5[i,9]<-format(pids5[i,7],"%b") ##set count_towards_month 
     }
   }
   
+  ##Command line code to check SPO pids
+  pidsspo<-pids5[which(pids5$EG=="O365 SharePoint"),]
+  pidsspo2<-pidsspo[which(is.na(pidsspo$RTEGActualDeliveryDate)),]
+  
+  ##Calculate count_towards_month for instances where DM_Est_RTEG is NULL and Committed RTEG is not NULL
+  for(i in 1:nrow(pids5)){
+    if(pids5[i,5]=="Active"&&is.na(pids5[i,7])&&!is.na(pids5[i,8]))
+      pids5[i,9]<-format(pids5[i,8],"%b")
+  }
+  
+
   
   
   
