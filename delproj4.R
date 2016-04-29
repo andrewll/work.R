@@ -79,8 +79,8 @@ delproj4<-function(){
   
   ##Calculate count_towards_month for instances where DM_Est_RTEG is greater than Committed RTEG
   for(i in 1:nrow(pids5)){
-    if(pids5[i,5]=="Active"&&!is.na(pids5[i,7])&&!is.na(pids5[i,7])){
-      if(pids5[i,7] > pids5[i,8]) pids5[i,9]<-format(pids5[i,7],"%b") ##set count_towards_month 
+    if(pids5[i,5]=="Active"&&!is.na(pids5[i,7])&&!is.na(pids5[i,8])&&(pids5[i,7] > pids5[i,8])){
+      pids5[i,9]<-format(pids5[i,7],"%b") ##set count_towards_month 
     }
   }
   
@@ -94,7 +94,23 @@ delproj4<-function(){
       pids5[i,9]<-format(pids5[i,8],"%b")
   }
   
-
+  ##Set PID count
+  pids7<-mutate(pids5, OTCount = 0, PIDCount = 1)  ##add columns for OTCount and PIDCount
+  
+  ##Set OT Count for rows with RTEGOTDF values and value=="Yes"
+  for(i in 1:nrow(pids7)){
+    if(pids7[i,5]=="Yes") pids7[i,10]<-1     ##if OTDF="Yes then mark as OT
+  }
+  
+  ##Set OT Count for rows with Committed=Null and DM Est RTEG Date is set.  Assume team can still deliver On-Time.
+  for(i in 1:nrow(pids7)){
+    DM_Est<-NA
+    if(pids7[i,5]=="Active" && !is.na(pids7[i,7]) && is.na(pids7[i,8])) {  ##Committed RTEG is NULL, DM Est is set
+      DM_Est<-ymd(pids7[i,7])
+      if(DM_Est > CurrentDay) pids7[i,10]<-1
+    } 
+    DM_Est<-NA
+  }
   
   
   
