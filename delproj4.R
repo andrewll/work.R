@@ -112,6 +112,13 @@ delproj4<-function(){
     DM_Est<-NA
   }
   
+  pids9<-pids7 %>% 
+    group_by(EG, count_towards_month) %>% 
+    summarize(sumOT=sum(OTCount),sumPIDCount=sum(PIDCount),OT_Projection_for_Month=sumOT/sumPIDCount) %>% 
+    arrange(EG, count_towards_month)
 
+  write.csv(pids7,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/predictive_OT_ouput.csv")
+  write.csv(pids9,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/predictive_OT_output_summary.csv")
+  
   
 }
