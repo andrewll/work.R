@@ -85,8 +85,8 @@ delproj4<-function(){
   }
   
   ##Command line code to check SPO pids
-  pidsspo<-pids5[which(pids5$EG=="O365 SharePoint"),]
-  pidsspo2<-pidsspo[which(is.na(pidsspo$RTEGActualDeliveryDate)),]
+  ##pidsspo<-pids5[which(pids5$EG=="O365 SharePoint"),]
+  ##pidsspo2<-pidsspo[which(is.na(pidsspo$RTEGActualDeliveryDate)),]
   
   ##Calculate count_towards_month for instances where DM_Est_RTEG is NULL and Committed RTEG is not NULL
   for(i in 1:nrow(pids5)){
@@ -105,14 +105,13 @@ delproj4<-function(){
   ##Set OT Count for rows with Committed=Null and DM Est RTEG Date is set.  Assume team can still deliver On-Time.
   for(i in 1:nrow(pids7)){
     DM_Est<-NA
-    if(pids7[i,5]=="Active" && !is.na(pids7[i,7]) && is.na(pids7[i,8])) {  ##Committed RTEG is NULL, DM Est is set
-      DM_Est<-ymd(pids7[i,7])
+    if(pids7[i,5]=="Active" & !is.na(pids7[i,7]) & is.na(pids7[i,8])) {  ##Committed RTEG is NULL, DM Est is set
+      DM_Est<-pids7[i,7]
       if(DM_Est > CurrentDay) pids7[i,10]<-1
     } 
     DM_Est<-NA
   }
   
-  
-  
+
   
 }
