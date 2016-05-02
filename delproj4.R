@@ -61,11 +61,27 @@ delproj4<-function(){
   pidsnames <- gsub("\\.","",names(pids))
   colnames(pids) <- c(pidsnames)
   
+  ##define fiscal year
+  fy16<-c("2015-07","2015-08","2015-09","2015-10","2015-11","2015-12",
+          "2016-01","2016-02","2016-03","2016-04","2016-05","2016-06")
+  
+  
   #remove rows where EG is NULL
   pids2<-pids[which(!is.na(pids$EG)),]
   
+  ##create month column so we can evaluate fiscal year month
+  fymonth_table<-tbl_df(pids2)
+  fymonth_table2<-mutate(fymonth_table, fymonth = format(fymonth_table$RTEGActualDeliveryDate, format = "%Y-%m")) ##default on RTEGActualDeliveryDate
+  for (i in 1:nrow(fymonth_table2)){
+    if(!is.na(fymonth_table2[i,11]) & fymonth_table2[i,22]=="Active") {fymonth_table2[i,49]<-format(fymonth_table2[i,11], format = "%Y-%m") ##set fymonth to Committed Delivery Date
+    }else if(!is.na(fymonth_table2[i,10]) & fymonth_table2[i,22]=="Active") fymonth_table2[i,49]<-format(fymonth_table2[i,10], format = "%Y-%m")  ##set fymonth to DM Est RTEG Date
+  }
+  fymonth_table4<-fymonth_table2[which(fymonth_table2$fymonth %in% fy16),]
+  
+  
+  
   ##Create month column
-  pids3<-subset(pids2,select=c("EG","DeliveryNumber","ProjectTitle","ProjectCategory","RTEGOTDF","RTEGActualDeliveryDate","DMEstimatedRTEGDate","CommittedDeliveryDate"))
+  pids3<-subset(fymonth_table4,select=c("EG","DeliveryNumber","ProjectTitle","ProjectCategory","RTEGOTDF","RTEGActualDeliveryDate","DMEstimatedRTEGDate","CommittedDeliveryDate"))
   pids4<-tbl_df(pids3)
   pids5<-mutate(pids4,count_towards_month = format(ymd(RTEGActualDeliveryDate),"%b")) ##takes actual RTEG date as value for count_towards_month by default
   
