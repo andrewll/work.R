@@ -67,23 +67,33 @@ delproj4<-function(){
   
   
   #remove rows where EG is NULL
-  pids2<-pids[which(!is.na(pids$EG)),]
+  pids2<-pids[which(pids$EG=="O365 SharePoint"),]
   
   ##create month column so we can evaluate fiscal year month
   fymonth_table<-tbl_df(pids2)
   fymonth_table2<-mutate(fymonth_table, fymonth = format(fymonth_table$RTEGActualDeliveryDate, format = "%Y-%m")) ##default on RTEGActualDeliveryDate
+  
+  ##if either CRTEG or DM Est RTEG are NULL
   for (i in 1:nrow(fymonth_table2)){
     if(!is.na(fymonth_table2[i,11]) & fymonth_table2[i,22]=="Active") {fymonth_table2[i,49]<-format(fymonth_table2[i,11], format = "%Y-%m") ##set fymonth to Committed Delivery Date
     }else if(!is.na(fymonth_table2[i,10]) & fymonth_table2[i,22]=="Active") fymonth_table2[i,49]<-format(fymonth_table2[i,10], format = "%Y-%m")  ##set fymonth to DM Est RTEG Date
   }
+  
+  ##if both CRTEG and DM Est RTEG are not NULL, use DM Est RTEG
+  for (i in 1:nrow(fymonth_table2)){
+    if(fymonth_table2[i,22]=="Active" & !is.na(fymonth_table2[i,10]) & !is.na(fymonth_table2[i,11]) ){
+      if(fymonth_table2[i,10]<=fymonth_table2[i,11]) fymonth_table2[i,49]<-format(fymonth_table2[i,10], format = "%Y-%m")
+    }
+  }
+  
+  ##subset only rows for the desired fiscal year
   fymonth_table4<-fymonth_table2[which(fymonth_table2$fymonth %in% fy16),]
   
   
-  
-  ##Create month column
+  ##Create month column 
   pids3<-subset(fymonth_table4,select=c("EG","DeliveryNumber","ProjectTitle","ProjectCategory","RTEGOTDF","RTEGActualDeliveryDate","DMEstimatedRTEGDate","CommittedDeliveryDate"))
-  pids4<-tbl_df(pids3)
-  pids5<-mutate(pids4,count_towards_month = format(ymd(RTEGActualDeliveryDate),"%b")) ##takes actual RTEG date as value for count_towards_month by default
+  ##pids4<-tbl_df(pids3)
+  pids5<-mutate(pids3,count_towards_month = format(ymd(RTEGActualDeliveryDate),"%b")) ##takes actual RTEG date as value for count_towards_month by default
   
   ##Set count_towards_month based on DM Est RTEG Date
   for(i in 1:nrow(pids5)){
@@ -126,6 +136,13 @@ delproj4<-function(){
       if(DM_Est > CurrentDay) pids7[i,10]<-1
     } 
     DM_Est<-NA
+  }
+  
+  ##Set OT Count for rows with CRTEG and DMEstRTEG set.  If DM_Est is less than or equal to CRTEG, then it's on time.
+  for(i in 1:nrow(pids7)){
+    if(pids7[i,5]=="Active" & !is.na(pids7[i,7]) & !is.na(pids7[i,8])){
+      if(pids7[i,7]<=pids7[i,8]) pids7[i,10]<-1
+    }
   }
   
   pids9<-pids7 %>% 
