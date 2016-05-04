@@ -148,15 +148,17 @@ requestedrteg<-function(){
   ##extract active pids where CurrentCommittedDockDate is not NULL
   activepids<-pids2[which(is.na(pids$RTEGActualDeliveryDate)),]
   activepids2<-activepids[which(!is.na(activepids$CurrentCommittedDockDate)),]
+  activepids3<-activepids2[which(activepids2$EG=="O365 SharePoint"),]
+  
   
   ##calculate the DTR for active pids
   CurrentDay <- as.Date(today())
-  activepids3<- activepids2 %>%
+  activepids5<- activepids3 %>%
     mutate(activedtr = CurrentDay - CurrentCommittedDockDate)%>%
     arrange(desc(activedtr))
   
   ##create column for performance to RRTEG
-  pids3 <- mutate(pids2, PerformanceToRequestedRTEG = DMEstimatedRTEGDate - RequestedDeliveryDate)
+  pids3 <- mutate(pids2, PerformanceToRequestedRTEG = DMEstimatedRTEGDate - RequestedDeliveryDate, PIDcreateToRTEG = RTEGActualDeliveryDate-ProjectCreationDate)
   
   ##Add a monthname column
   pids3$rtegmonthname <- format(pids3$rtegActualMonth, format = "%Y-%m")
@@ -176,8 +178,10 @@ requestedrteg<-function(){
                                     "RequestedDeliveryDate",
                                     "DMEstimatedRTEGDate",
                                     "PerformanceToRequestedRTEG",
+                                    "RTEGActualDeliveryDate",
                                     "rtegActualMonth",
                                     "rtegmonthname",
+                                    "PIDcreateToRTEG",
                                     "WaveCategory",
                                     "DTR"))
   
@@ -193,13 +197,15 @@ requestedrteg<-function(){
   for(i in 1:nrow(pids7)){
     if(is.na(pids7[i,]$rtegActualMonth))  pids7[i,]$DeliveryStatus <- c("Active")
   }
+  
+
 
 
   ##print output file for Delivered PIDs
   write.csv(pids7,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report_delivered_pids.csv")
 
   ##print output file for Active PIDs where Current Committed Dock Date is not NULL
-  write.csv(activepids3,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report_active_pids.csv")
+  write.csv(activepids5,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report_active_pids.csv")
 
   ##calculate pidcount
   ##pidcount <- count(pids6, vars = c("EG", "as.factor(rtegmonthname)"))

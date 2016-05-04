@@ -1,4 +1,4 @@
-delproj4<-function(){
+delproj4<-function(x){
   
   ###################
   ##
@@ -8,6 +8,8 @@ delproj4<-function(){
   ##
   ##Include fix for scenarios when the DM Est is greater than the Comm RTEG, the count_towards_month should be set to the DM_Est, starting 
   ## on line 68
+  ##
+  ## x is the input variable.  It should be an EG value in quotes.  Example "O365 SharePoint"
   ##
   ###################
   
@@ -67,7 +69,7 @@ delproj4<-function(){
   
   
   #remove rows where EG is NULL
-  pids2<-pids[which(pids$EG=="O365 SharePoint"),]
+  pids2<-pids[which(pids$EG==x),]
   
   ##create month column so we can evaluate fiscal year month
   fymonth_table<-tbl_df(pids2)
