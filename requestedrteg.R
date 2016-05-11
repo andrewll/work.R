@@ -51,7 +51,15 @@ requestedrteg<-function(){
   ##define the Delivery Pipeline path
   ##file_loc6 <- file.path(path, file6)
   
+  ##set valriable for delivered Network PIDs
+  nw_wave_category<-c("Wave 01 Network", "Wave 02 Network", "Wave 03 Network", "Wave 04 Network",
+                      "Wave 05 Network", "Wave 06 Network", "Wave 07 Network", "Wave 08 Network", 
+                      "Wave 8.5 Network", "Wave 09 Network", "Wave 10 Network", "Wave 11 Network")
   
+  ##set valriable for delivered Server PIDs
+  svr_wave_category<-c("Wave 01 Server", "Wave 02 Server", "Wave 03 Server", "Wave 04 Server",
+                       "Wave 05 Server", "Wave 06 Server", "Wave 07 Server", "Wave 08 Server", 
+                       "Wave 8.5 Server", "Wave 09 Server", "Wave 10 Server", "Wave 11 Server")
   
   
   ## read the deployment performance file
@@ -80,9 +88,7 @@ requestedrteg<-function(){
   spowaves <- read.csv(file_loc5,
                        header = TRUE, colClasses = NA, na.strings = "N/A", stringsAsFactors = TRUE)
   
-  ## read the Delivery Pipeline file
-  ##delpipe <- read.csv(file6, 
-  ##                    header = TRUE, colClasses = NA, na.strings = "N/A", stringsAsFactors = TRUE)
+  
   
   ##convert dates to date format for pids table
   pids$RTEGActualDeliveryDate <- as.Date(pids$RTEGActualDeliveryDate, format = "%m/%d/%Y")
@@ -128,6 +134,7 @@ requestedrteg<-function(){
   ,p.DataCenter
   ,p.ProjectCategory
   ,p.DeploymentClass
+  ,p.PreRackCount
   ,p.DemandCreatedDate
   ,p.ProjectCreationDate
   ,p.DTR
@@ -172,6 +179,7 @@ requestedrteg<-function(){
                                     "ProjectCreationDate",
                                     "ReceivingDate",
                                     "DataCenter",
+                                    "PreRackCount",
                                     "POConfirmedDockDate",
                                     "CurrentCommittedDockDate",
                                     "CommittedDeliveryDate", 
@@ -198,8 +206,10 @@ requestedrteg<-function(){
     if(is.na(pids7[i,]$rtegActualMonth))  pids7[i,]$DeliveryStatus <- c("Active")
   }
   
-
-
+  ##subset on the network pids
+  pids9 <- pids7[which(pids7$WaveCategory %in% nw_wave_category),]
+  pids11 <- pids9[which(pids9$DeliveryStatus=="Delivered"),]
+  
 
   ##print output file for Delivered PIDs
   write.csv(pids7,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report_delivered_pids.csv")
@@ -210,6 +220,28 @@ requestedrteg<-function(){
   ##calculate pidcount
   ##pidcount <- count(pids6, vars = c("EG", "as.factor(rtegmonthname)"))
   ##names(pidcount) <- c("EG", "rtegmonthname", "pidcount")
+  
+  ##subset on the network pids
+  pids9 <- pids7[which(pids7$WaveCategory %in% nw_wave_category),]
+  pids11 <- pids9[which(pids9$DeliveryStatus=="Delivered"),]
+  
+  ##chart boxplots of network pids - cycle time for PID lifecycle
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network.png", width = 960, height = 480, units = "px")
+  g<-ggplot(pids11, aes(WaveCategory, PIDcreateToRTEG))
+  g + geom_boxplot()
+  dev.off()
+  
+  ##subset on server pids
+  pids13<-pids7[which(pids7$WaveCategory %in% svr_wave_category),]
+  pids15<-pids13[which(pids13$DeliveryStatus=="Delivered"),]
+  
+  ##chart boxplots of server pids - cycle time for PID lifecycle
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_servers.png", width = 960, height = 480, units = "px")
+  g<-ggplot(pids15, aes(WaveCategory, PIDcreateToRTEG))
+  g + geom_boxplot()
+  dev.off()
+  
+  
   
   
 }
