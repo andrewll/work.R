@@ -166,6 +166,8 @@ requestedrteg<-function(){
   
   ##create column for performance to RRTEG
   pids3 <- mutate(pids2, PerformanceToRequestedRTEG = DMEstimatedRTEGDate - RequestedDeliveryDate, PIDcreateToRTEG = RTEGActualDeliveryDate-ProjectCreationDate)
+  pids3$PIDcreateToRTEG <-as.numeric(pids3$PIDcreateToRTEG)
+  pids3$PerformanceToRequestedRTEG <- as.numeric(pids3$PerformanceToRequestedRTEG)
   
   ##Add a monthname column
   pids3$rtegmonthname <- format(pids3$rtegActualMonth, format = "%Y-%m")
@@ -205,11 +207,7 @@ requestedrteg<-function(){
   for(i in 1:nrow(pids7)){
     if(is.na(pids7[i,]$rtegActualMonth))  pids7[i,]$DeliveryStatus <- c("Active")
   }
-  
-  ##subset on the network pids
-  pids9 <- pids7[which(pids7$WaveCategory %in% nw_wave_category),]
-  pids11 <- pids9[which(pids9$DeliveryStatus=="Delivered"),]
-  
+
 
   ##print output file for Delivered PIDs
   write.csv(pids7,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report_delivered_pids.csv")
@@ -228,7 +226,7 @@ requestedrteg<-function(){
   ##chart boxplots of network pids - cycle time for PID lifecycle
   png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network.png", width = 960, height = 480, units = "px")
   g<-ggplot(pids11, aes(WaveCategory, PIDcreateToRTEG))
-  g + geom_boxplot()
+  g + geom_boxplot()+labs(title="SPO Network PID LifeCycle - PIDcreate-to-RTEG")
   dev.off()
   
   ##subset on server pids
@@ -238,7 +236,7 @@ requestedrteg<-function(){
   ##chart boxplots of server pids - cycle time for PID lifecycle
   png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_servers.png", width = 960, height = 480, units = "px")
   g<-ggplot(pids15, aes(WaveCategory, PIDcreateToRTEG))
-  g + geom_boxplot()
+  g + geom_boxplot()+labs(title="SPO Server PID LifeCycle - PIDcreate-to-RTEG")
   dev.off()
   
   
