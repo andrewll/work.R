@@ -210,10 +210,10 @@ requestedrteg<-function(){
 
 
   ##print output file for Delivered PIDs
-  ##write.csv(pids7,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report_delivered_pids.csv")
+  write.csv(pids7,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report_delivered_pids.csv")
 
   ##print output file for Active PIDs where Current Committed Dock Date is not NULL
-  ##write.csv(activepids5,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report_active_pids.csv")
+  write.csv(activepids5,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_rrteg_report_active_pids.csv")
 
   ##calculate pidcount
   ##pidcount <- count(pids6, vars = c("EG", "as.factor(rtegmonthname)"))
@@ -224,10 +224,10 @@ requestedrteg<-function(){
   pids11 <- pids9[which(pids9$DeliveryStatus=="Delivered"),]
   
   ##chart boxplots of network pids - cycle time for PID lifecycle
-  ##png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network.png", width = 960, height = 480, units = "px")
-  ##g<-ggplot(pids11, aes(WaveCategory, PIDcreateToRTEG))
-  ##g + geom_boxplot()+labs(title="SPO Network PID LifeCycle - PIDcreate-to-RTEG")
-  ##dev.off()
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network.png", width = 960, height = 480, units = "px")
+  g<-ggplot(pids11, aes(WaveCategory, PIDcreateToRTEG))
+  g + geom_boxplot()+labs(title="SPO Network PID LifeCycle - PIDcreate-to-RTEG")
+  dev.off()
   
   ##subset on server pids
   pids13<-pids7[which(pids7$WaveCategory %in% svr_wave_category),]
@@ -235,7 +235,7 @@ requestedrteg<-function(){
   
   ##chart boxplots of server pids - cycle time for PID lifecycle
   png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_servers.png", width = 960, height = 480, units = "px")
-  g<-ggplot(pids15, aes(WaveCategory, PIDcreateToRTEG))
+  g<-ggplot(pids15, aes(rtegmonthname, PIDcreateToRTEG))
   g + geom_boxplot()+labs(title="SPO Server PID LifeCycle - PIDcreate-to-RTEG")
   dev.off()
   

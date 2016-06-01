@@ -72,6 +72,7 @@ clusterpair<--function(){
   
   ##join the merge table with the pids table
   SQLQuery1 <- "SELECT p.DeliveryNumber
+  ,p.ProjectTitle  
   ,p.DMEstimatedRTEGDate
   ,p.CommittedDeliveryDate
   ,p.DataCenter
@@ -84,6 +85,17 @@ clusterpair<--function(){
   
   ##subset to just the PIDs in the pairing list
   pids11<-pids9[which(!is.na(pids9$Pair)),]
+  
+  ##format dataframe for output - Region variable
+  pids13<-mutate(pids11, Region = "")
+  for(i in 1:nrow(pids13)){
+    if(grep("NA",pids13[i,6])) pids13[i,7]<-"US"
+  }
+  
+  
+  ##print output
+  write.csv(pids11,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/output_cluster_pairs.csv")
+  
   
   
 }
