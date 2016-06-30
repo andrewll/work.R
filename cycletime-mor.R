@@ -1,0 +1,166 @@
+cycletime-mor<-function(){
+  
+  #######################
+  ##
+  ##  given a list of MORs, find the cycle time for 4 milestones PidCreate-to-PO, PO-to-POApproval, POapproval-to-dock, dock-to-rteg
+  ##  find cycle time overall
+  ##  calculate correlations of milestones to overall cycle time
+  ##
+  #######################
+  
+  library(ggplot2)
+  library(dplyr)
+  library(sqldf)
+  library(scales)
+  library(reshape2)
+  library(lubridate)
+  
+  # basic set up clear all existing variables 
+  rm(list = ls(all=T))
+  
+  ##set the path to DeploymentPerformance file
+  path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
+  
+  
+  ##define the deloyments file
+  file1 <- "DeliveryPerformance.csv"
+  ##define abbreviations file
+  file2 <- "morlist.csv"
+  ##define input with PO Create and PO Approve dates
+  file5 <- "DeliveryPerformanceWithMilestone.csv"
+  
+  ##define the Deployments file path
+  file_loc1 <- file.path(path, file1)
+  #define spo abbreviation file path
+  file_loc2 <-file.path(path, file2)
+  ##define the spo pairs file path
+  file_loc5 <- file.path(path, file5)
+  
+  ## read the deployment performance file
+  pids <- read.csv(file_loc1, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
+  
+  ##read mor list
+  morlist <- read.csv(file_loc2, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
+  
+  ##read pids with PO data
+  dat <- read.csv(file_loc5, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
+  
+  ##convert dates to date format for pids table
+  pids$RTEGActualDeliveryDate <- as.Date(pids$RTEGActualDeliveryDate, format = "%m/%d/%Y")
+  pids$ReceivingDate <- as.Date(pids$ReceivingDate, format = "%m/%d/%Y")
+  pids$DemandCreatedDate<- as.Date(pids$DemandCreatedDate, format = "%m/%d/%Y")
+  pids$woadDock <- as.Date(pids$woadDock, format = "%m/%d/%Y")
+  pids$DM.Estimated.RTEG.Date <- as.Date(pids$DM.Estimated.RTEG.Date, format = "%m/%d/%Y")
+  pids$RequestedDeliveryDate <- as.Date(pids$RequestedDeliveryDate, format = "%m/%d/%Y")
+  pids$ProjectCreationDate <- as.Date(pids$ProjectCreationDate, format = "%m/%d/%Y")
+  pids$PO.Confirmed.Dock.Date <- as.Date(pids$PO.Confirmed.Dock.Date, format = "%m/%d/%Y")
+  pids$Current.Committed.Dock.Date <- as.Date(pids$Current.Committed.Dock.Date, format = "%m/%d/%Y")
+  pids$rtegActualMonth <- as.Date(pids$rtegActualMonth, format = "%m/%d/%Y")
+  
+  ##convert dates to date format for dat table
+  dat$MaxPOCreateDate<- as.Date(dat$MaxPOCreateDate, format = "%m/%d/%Y")
+  dat$MaxPOApproveDate<- as.Date(dat$MaxPOApproveDate, format = "%m/%d/%Y")
+
+  ##remove dots in header names in pids table
+  pidsnames <- gsub("\\.","",names(pids))
+  colnames(pids) <- c(pidsnames)
+  
+  morlistnames <-gsub("\\.","",names(morlist))
+  colnames(morlist) <-c(morlistnames)
+  
+  datnames <- gsub("\\.","",names(dat))
+  colnames(dat) <- c(datnames)
+  
+  ##join the merge table with the pids table
+  SQLQuery1 <- "SELECT w.DeliveryNumber
+  ,p.EG
+  ,p.PropertyGroup
+  ,p.DPM
+  ,p.ProjectTitle
+  ,p.DeploymentClass
+  ,p.ProjectCategory
+  ,p.DemandCreatedDate
+  ,p.ProjectCreationDate
+  ,p.RTEGActualDeliveryDate
+  ,p.woadPOCreation
+  ,p.woadDock
+  ,p.RequestedDeliveryDate
+  ,p.ReceivingDate
+  ,p.DMEstimatedRTEGDate
+  ,p.DTR
+  FROM morlist w
+  LEFT JOIN pids p
+  ON w.DeliveryNumber = p.DeliveryNumber"
+  
+  pids3 <- sqldf(SQLQuery1)
+  
+  ##subset to just the PIDs that were RTEG'ed
+  pids5<-pids3[which(!is.na(pids3$RTEGActualDeliveryDate)),]
+  
+  ##second SQL join to get the Max.PO.Create.Date and Max.PO.Approve.Date 
+  SQLQuery2 <- "SELECT p.DeliveryNumber
+  ,p.EG
+  ,p.PropertyGroup
+  ,p.DPM
+  ,p.ProjectTitle
+  ,p.DeploymentClass
+  ,p.ProjectCategory
+  ,p.DemandCreatedDate
+  ,p.ProjectCreationDate
+  ,p.RTEGActualDeliveryDate
+  ,p.woadPOCreation
+  ,p.woadDock
+  ,p.RequestedDeliveryDate
+  ,p.ReceivingDate
+  ,p.DMEstimatedRTEGDate
+  ,p.DTR
+  ,w.MaxPOCreateDate
+  ,w.MaxPOApproveDate
+  FROM pids5 p
+  LEFT JOIN dat w
+  ON p.DeliveryNumber = w.DeliveryNumber"
+  
+  pids7 <- sqldf(SQLQuery2)
+  
+  ##remove duplicate rows
+  pids9<-unique(pids7)
+  
+  ## add calculated variables
+  pids11 <- mutate(pids9, Year_Created = format(ProjectCreationDate,"%Y"), 
+                  Month_Created = format(ProjectCreationDate, "%Y-%m"),
+                  Month_Docked = format(woadDock, "%Y-%m"),
+                  PIDCount = 1)
+  
+  pids13 <- mutate(pids11, demandcreate_to_pidcreate = as.numeric(ProjectCreationDate - DemandCreatedDate),
+                  pidcreate_to_pocreate = as.numeric(MaxPOCreateDate - ProjectCreationDate), 
+                  pocreate_to_poapprove = as.numeric(MaxPOApproveDate - MaxPOCreateDate),
+                  poapprove_to_dock = as.numeric(woadDock - MaxPOApproveDate))
+  
+  ##rearranging columns
+  pids15 <- subset(pids13, select = c("EG"
+                                    ,"DeliveryNumber"
+                                    ,"ProjectTitle"
+                                    ,"ProjectCategory"
+                                    ,"DeploymentClass"
+                                    ,"DemandCreatedDate"
+                                    ,"ProjectCreationDate"
+                                    ,"MaxPOCreateDate"
+                                    ,"MaxPOApproveDate"
+                                    ,"woadDock"
+                                    ,"RTEGActualDeliveryDate"
+                                    ,"PIDCount"
+                                    ,"Month_Docked"
+                                    ,"Year_Created"
+                                    ,"Month_Created"
+                                    ,"demandcreate_to_pidcreate"
+                                    ,"pidcreate_to_pocreate"
+                                    ,"pocreate_to_poapprove"
+                                    ,"poapprove_to_dock"
+                                    ,"DTR"
+  ))
+  
+  ##print output
+  write.csv(pids15,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/output_mor_cycletimes.csv")
+  
+  
+  }

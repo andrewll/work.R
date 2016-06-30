@@ -51,6 +51,8 @@ clusterpair<-function(){
   pids$PO.Confirmed.Dock.Date <- as.Date(pids$PO.Confirmed.Dock.Date, format = "%m/%d/%Y")
   pids$Current.Committed.Dock.Date <- as.Date(pids$Current.Committed.Dock.Date, format = "%m/%d/%Y")
   pids$rtegActualMonth <- as.Date(pids$rtegActualMonth, format = "%m/%d/%Y")
+  pids$CommittedDeliveryDate <- as.Date(pids$CommittedDeliveryDate, format = "%m/%d/%Y")
+  pids$RequestedDeliveryDate <- as.Date(pids$RequestedDeliveryDate, format = "%m/%d/%Y")
   
   ##remove dots in header names in pids table
   pidsnames <- gsub("\\.","",names(pids))
@@ -65,7 +67,8 @@ clusterpair<-function(){
   
   ##join the merge table with the pids table
   SQLQuery1 <- "SELECT p.DeliveryNumber
-  ,p.ProjectTitle  
+  ,p.ProjectTitle
+  ,p.RequestedDeliveryDate
   ,p.DMEstimatedRTEGDate
   ,p.CommittedDeliveryDate
   ,p.RTEGActualDeliveryDate
@@ -92,7 +95,7 @@ clusterpair<-function(){
   
   pids15<-mutate(pids13, Live = RTEG + 40)
   
-  pids17<-subset(pids15,select = c("Region","Pair","Status","Intent","RTEG","Live"))
+  pids17<-subset(pids15,select = c("Region","Pair","Status","Intent","RequestedDeliveryDate","RTEG","Live","CommittedDeliveryDate"))
   pids19<-arrange(pids17,Pair,RTEG)
                  
 
