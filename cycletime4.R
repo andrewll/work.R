@@ -131,18 +131,40 @@ cycletime4<-function(){
   pids9 <- mutate(pids7, Year_Delivered = format(RTEGActualDeliveryDate,"%Y"), 
                   Month_Delivered = format(RTEGActualDeliveryDate, "%Y-%m"))
   
-  pids11 <- mutate(pids9, demandcreate_to_pidcreate = as.numeric(ProjectCreationDate - DemandCreatedDate),
-                        pidcreate_to_pocreate = as.numeric(POCreatedDate - ProjectCreationDate), 
-                        pocreate_to_poapprove = as.numeric(POApprovedDate - POCreatedDate),
-                        poapprove_to_dock = as.numeric(WorkOrderActualDockDate - POApprovedDate),
-                        dock_to_rteg = as.numeric(DockToRTEG))
+  ##pids11 <- mutate(pids9, demandcreate_to_pidcreate = as.numeric(ProjectCreationDate - DemandCreatedDate),
+  ##                      pidcreate_to_pocreate = as.numeric(POCreatedDate - ProjectCreationDate), 
+  ##                      pocreate_to_poapprove = as.numeric(POApprovedDate - POCreatedDate),
+  ##                      poapprove_to_dock = as.numeric(WorkOrderActualDockDate - POApprovedDate),
+  ##                      dock_to_rteg = as.numeric(DockToRTEG))
+  
+  pids11 <- mutate(pids9,pidcreate_to_pocreate = as.numeric(POCreatedDate - ProjectCreationDate),
+                   poapprove_to_dock = as.numeric(WorkOrderActualDockDate - POCreatedDate),
+                   dock_to_rteg = as.numeric(DockToRTEG))
+  
+  pids21 <- mutate(pids9, pid_to_rteg = RTEGActualDeliveryDate - ProjectCreationDate)
+  
+  ##Subset to just PRDs and Network pids
+  pids13 <- pids11[which(pids11$ProjectCategory=="PRD"),]
+  pids15 <- pids11[which(pids11$ProjectCategory=="Network"),]
+  pids23 <- pids21[which(pids21$ProjectCategory=="PRD"),]
+  pids25 <- pids21[which(pids21$ProjectCategory=="Network"),]
   
   ##output all dataframe
   ##write.csv(pidsvon9,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidsvon.csv")
   ##write.csv(pidslorinda13,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidslorinda.csv")
   ##write.csv(pidssandeep7,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidssandeep.csv")
-  write.csv(pids11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidsandrew.csv")
+  write.csv(pids13,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO-PRD-CT-majormilestones.csv")
+  write.csv(pids15,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO-Network-CT-majormilestones.csv")
+  write.csv(pids23,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO-PRD-CT.csv")
+  write.csv(pids25,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO-Network-CT.csv")
   
+  
+  ##plot
+  ##png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network_configverifymilestone.png", 
+  ##    width = 960, height = 480, units = "px")
+  ##g<-ggplot(pids13, aes(x=Month_Delivered, y=ConfigureVerifyNetworkValue))
+  ##g+geom_boxplot()+labs(title="SPO Network PIDs Config&Verify Milestone Cycle Times by Month of RTEG", x="Month of RTEG", y="Cycle Time in days")
+  ##dev.off()
   
   
 }

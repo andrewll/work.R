@@ -49,7 +49,7 @@ milestonect<-function(){
   
   ##subsetting to correct data
   pids03<-pids[which(pids$EG=="O365 SharePoint"),]
-  pids05<-pids03[which(pids03$RTEGActualDeliveryDate>"2015-07-01"),]
+  pids05<-pids03[which(pids03$RTEGActualDeliveryDate>"2016-01-01"),]
   pids07<-pids05[which(pids05$ProjectCategory %in% desired_project_category),]
   pids09<-pids07[which(pids07$DeploymentClass=="New Deployment"),]
 
@@ -59,6 +59,9 @@ milestonect<-function(){
   ,p.EG
   ,p.ProjectCategory
   ,p.DeploymentClass
+  ,p.WorkOrderName
+  ,p.WorkOrderCycleTime
+  ,p.MilestoneName
   ,p.ProjectReadinessValue
   ,p.NetworkReadinessValue
   ,p.CablingReadinessValue
@@ -79,14 +82,72 @@ milestonect<-function(){
   ##subset down to unique values per row
   pids14<-unique(pids12)
   
+  pids15<-mutate(pids14, month_delivered = format(ymd(RTEGActualDeliveryDate),"%Y-%m"))
+  
   ##split into network and PRD pids
-  pids16<-pids14[which(pids14$ProjectCategory=="Network"),]
-  pids36<-pids14[which(pids14$ProjectCategory=="PRD"),]
+  pids16<-pids15[which(pids15$ProjectCategory=="Network"),]
+  pids28<-pids15[which(pids15$ProjectCategory=="PRD"),]
 
-  ##generate charts for network pids
-  g<-ggplot(pids16, aes(x=WavesCategory, y=ConfigureVerifyNetworkValue))
-  g+geom_boxplot()
+  ##generate charts for network pids for Configure & Verify milestone
+  pids36<-pids16[which(pids16$MilestoneName=="Configure & Verify Network"),]
+    png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network_configverifymilestone_GFSD_data.png", 
+      width = 960, height = 480, units = "px")
+  g<-ggplot(pids36, aes(x=month_delivered, y=WorkOrderCycleTime, fill=WorkOrderName))
+  g+geom_boxplot()+labs(title="SPO Network PIDs Config&Verify Milestone Cycle Times by Month of RTEG", x="Month of RTEG", y="Cycle Time in days")+
+      geom_hline(yintercept = 29)
+  dev.off()
+  
+  ##generate charts for PRD pids for Configure & Verify milestone
+  pids48<-pids28[which(pids28$MilestoneName=="Configure & Verify Network"),]
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_prd_configverifymilestone_GFSD_data.png", 
+      width = 960, height = 480, units = "px")
+  g<-ggplot(pids48, aes(x=month_delivered, y=WorkOrderCycleTime, fill=WorkOrderName))
+  g+geom_boxplot()+labs(title="SPO PRD PIDs Config&Verify Milestone Cycle Times by Month of RTEG", x="Month of RTEG", y="Cycle Time in days")+
+    geom_hline(yintercept = 7)
+  dev.off()
   
   
-    
+  
+  #generate data sheet for network pids
+  pids26<-pids16 %>%
+    arrange(month_delivered)
+  
+  ##plot for network pids for Procurement milestone
+  pids37<-pids16[which(pids16$MilestoneName=="Procurement"),]
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network_procurementvalue_GFSD_data.png", 
+      width = 960, height = 480, units = "px")
+  g<-ggplot(pids37, aes(x=month_delivered, y=WorkOrderCycleTime, fill=WorkOrderName))
+  g+geom_boxplot()+labs(title="SPO Network PIDs Procurement Milestone", x="Month of RTEG", y="Cycle Time in days")+
+    geom_hline(yintercept = 10)
+  dev.off()
+  
+  
+  ##plot for PRD pids for Procurement milestone
+  pids49<-pids28[which(pids28$MilestoneName=="Procurement"),]
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_prd_procurementvalue_GFSD_data.png", 
+      width = 960, height = 480, units = "px")
+  g<-ggplot(pids49, aes(x=month_delivered, y=WorkOrderCycleTime, fill=WorkOrderName))
+  g+geom_boxplot()+labs(title="SPO PRD PIDs Procurement Milestone", x="Month of RTEG", y="Cycle Time in days")+
+    geom_hline(yintercept = 10)
+  dev.off()
+  
+  ##plot for Network pids for Receiving milestone
+  pids38<-pids16[which(pids16$MilestoneName=="Receiving"),]
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network_receivingvalue_GFSD_data.png", 
+      width = 960, height = 480, units = "px")
+  g<-ggplot(pids38, aes(x=month_delivered, y=WorkOrderCycleTime, fill=WorkOrderName))
+  g+geom_boxplot()+labs(title="SPO Network PIDs Receiving Milestone", x="Month of RTEG", y="Cycle Time in days")+
+    geom_hline(yintercept = 60)
+  dev.off()
+  
+  ##plot for PRD pids for Receiving milestone
+  pids50<-pids28[which(pids28$MilestoneName=="Receiving"),]
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_prd_receivingvalue_GFSD_data.png", 
+      width = 960, height = 480, units = "px")
+  g<-ggplot(pids50, aes(x=month_delivered, y=WorkOrderCycleTime, fill=WorkOrderName))
+  g+geom_boxplot()+labs(title="SPO PRD PIDs Receiving Milestone", x="Month of RTEG", y="Cycle Time in days")+
+    geom_hline(yintercept = 60)
+  dev.off()
+  
+
 }
