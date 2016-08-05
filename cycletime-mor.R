@@ -1,4 +1,4 @@
-cycletime-mor<-function(){
+cycletimemor<-function(){
   
   #######################
   ##
@@ -57,10 +57,6 @@ cycletime-mor<-function(){
   pids$Current.Committed.Dock.Date <- as.Date(pids$Current.Committed.Dock.Date, format = "%m/%d/%Y")
   pids$rtegActualMonth <- as.Date(pids$rtegActualMonth, format = "%m/%d/%Y")
   
-  ##convert dates to date format for dat table
-  dat$MaxPOCreateDate<- as.Date(dat$MaxPOCreateDate, format = "%m/%d/%Y")
-  dat$MaxPOApproveDate<- as.Date(dat$MaxPOApproveDate, format = "%m/%d/%Y")
-
   ##remove dots in header names in pids table
   pidsnames <- gsub("\\.","",names(pids))
   colnames(pids) <- c(pidsnames)
@@ -70,6 +66,12 @@ cycletime-mor<-function(){
   
   datnames <- gsub("\\.","",names(dat))
   colnames(dat) <- c(datnames)
+  
+  ##convert dates to date format for dat table
+  dat$MaxPOCreateDate<- as.Date(dat$MaxPOCreateDate, format = "%m/%d/%Y")
+  dat$MaxPOApproveDate<- as.Date(dat$MaxPOApproveDate, format = "%m/%d/%Y")
+
+
   
   ##join the merge table with the pids table
   SQLQuery1 <- "SELECT w.DeliveryNumber
@@ -152,15 +154,29 @@ cycletime-mor<-function(){
                                     ,"Month_Docked"
                                     ,"Year_Created"
                                     ,"Month_Created"
-                                    ,"demandcreate_to_pidcreate"
                                     ,"pidcreate_to_pocreate"
                                     ,"pocreate_to_poapprove"
                                     ,"poapprove_to_dock"
                                     ,"DTR"
   ))
   
+  #remove NA values
+  pids17<-pids15[which(!is.na(pids15$pidcreate_to_pocreate)),]
+  pids19<-pids17[which(!is.na(pids17$pocreate_to_poapprove)),]
+  
+  #calculate pid_to_rteg and dock_to_rteg
+  pids19$RTEGActualDeliveryDate <- as.Date(pids19$RTEGActualDeliveryDate, origin=lubridate::origin, format = "%m/%d/%Y")
+  pids21<-mutate(pids19, pid_to_rteg=RTEGActualDeliveryDate-ProjectCreationDate)
+  
+  ##group together for printing
+  pids23<-pids21%>%
+    group_by(Month_Created)%>%
+    summarize(pid_to_rteg_avg=mean(DTR, na.rm=TRUE), pid_to_rteg_95th=quantile(pid_to_rteg, .95, na.rm=TRUE), PIDCount = sum(PIDCount))%>%
+    arrange(Month_Created)
+  
   ##print output
-  write.csv(pids15,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/output_mor_cycletimes.csv")
+  write.csv(pids19,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/output_mor_cycletimes.csv")
+  write.csv(pids23,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/output_mor_cycletimes_summarized.csv")
   
   
   }

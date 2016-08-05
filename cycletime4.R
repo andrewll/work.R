@@ -141,13 +141,20 @@ cycletime4<-function(){
                    poapprove_to_dock = as.numeric(WorkOrderActualDockDate - POCreatedDate),
                    dock_to_rteg = as.numeric(DockToRTEG))
   
-  pids21 <- mutate(pids9, pid_to_rteg = RTEGActualDeliveryDate - ProjectCreationDate)
+  pids21 <- mutate(pids9, pid_to_rteg = RTEGActualDeliveryDate - ProjectCreationDate, pid_to_rteg_avg = mean(pid_to_rteg), pid_to_rteg_95th = quantile(pid_to_rteg,.95,na.rm = TRUE))
   
   ##Subset to just PRDs and Network pids
   pids13 <- pids11[which(pids11$ProjectCategory=="PRD"),]
   pids15 <- pids11[which(pids11$ProjectCategory=="Network"),]
   pids23 <- pids21[which(pids21$ProjectCategory=="PRD"),]
   pids25 <- pids21[which(pids21$ProjectCategory=="Network"),]
+  
+  ##summarize
+  ##pids27 <- pids23 %>% 
+    ##group_by(Month_Delivered) %>%
+    ##summarize(Month_Delivered, pid_to_rteg_avg, pid_to_rteg_95th, PIDCount = sum(PIDCount)) %>%
+    ##arrange(Month_Delivered)
+  
   
   ##output all dataframe
   ##write.csv(pidsvon9,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/pidsvon.csv")
@@ -157,7 +164,7 @@ cycletime4<-function(){
   write.csv(pids15,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO-Network-CT-majormilestones.csv")
   write.csv(pids23,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO-PRD-CT.csv")
   write.csv(pids25,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO-Network-CT.csv")
-  
+  write.csv(pids27,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO-PRD-CT-Summary.csv")
   
   ##plot
   ##png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network_configverifymilestone.png", 

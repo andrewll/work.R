@@ -104,8 +104,9 @@ cycletime3<-function(){
   
   ##summarize
   pids13<- pids9 %>% 
-    group_by(EG, ProjectCategory, Year_Delivered, Month_Delivered) %>%
+    group_by(EG, ProjectCategory, Year_Delivery_Est, Month_Delivery_Est) %>%
     summarize(PIDCount = sum(PIDCount), 
+              pid_to_rteg = RTEGActualDeliveryDate - ProjectCreationDate,
               pidcreate_to_pocreate_avg = mean(pidcreate_to_pocreate, na.rm = TRUE), 
               pidcreate_to_pocreate_95th = quantile(pidcreate_to_pocreate, .95, na.rm = TRUE),
               pocreate_to_poapprove_avg = mean(pocreate_to_poapprove, na.rm = TRUE),
@@ -114,7 +115,7 @@ cycletime3<-function(){
               poapprove_to_dock_95th = quantile(poapprove_to_dock, .95, na.rm = TRUE),
               Dock_to_RTEG_Avg = mean(DockToRTEG, na.rm=TRUE),  
               Dock_to_RTEG_95th = quantile(DockToRTEG, .95, na.rm=TRUE)) %>%
-    arrange(EG, ProjectCategory, Year_Delivered, Month_Delivered)
+    arrange(EG, ProjectCategory, Year_Delivery_Est, Month_Delivery_Est)
   
   
   ##assign output data
