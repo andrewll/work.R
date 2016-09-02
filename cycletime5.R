@@ -21,14 +21,17 @@ cycletime5<-function(){
   # basic set up clear all existing variables 
   rm(list = ls(all=T))
   
+  #setup variables
+  desired_project_category<-c("PRD")
+  desired_eg<-c("O365 Exchange")
+  
   ##set the path to DeploymentPerformance file
   path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
   
   
   ##define the deloyments file
   file1 <- "DeliveryPerformance.csv"
-  ##define input with PO Create and PO Approve dates
-  file5 <- "DeliveryPerformanceWithMilestone.csv"
+  
   
   ##define the Deployments file path
   file_loc1 <- file.path(path, file1)
@@ -54,8 +57,8 @@ cycletime5<-function(){
   colnames(pids) <- c(pidsnames)
 
   pids03 <- pids[which(pids$RTEGActualDeliveryDate > '2015-07-01'),]
-  pids05 <- pids03[which(pids03$EG=="O365 SharePoint"),]
-  pids07 <- pids05[which(pids05$ProjectCategory=="Network"),]
+  pids05 <- pids03[which(pids03$EG %in% desired_eg),]
+  pids07 <- pids05[which(pids05$ProjectCategory %in% desired_project_category),]
   
   pids09 <- mutate(pids07, Month_Delivered = format(RTEGActualDeliveryDate, "%Y-%m"),
                    pid_to_rteg = RTEGActualDeliveryDate - ProjectCreationDate,
@@ -68,13 +71,13 @@ cycletime5<-function(){
               pid_to_rteg_95th = quantile(pid_to_rteg,.95, na.rm = TRUE), 
               PIDCount = sum(PIDCount))
 
-  write.csv(pids09,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO-Network-CT_test.csv")
+  write.csv(pids11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/EXO-PRD-CT_test.csv")
   
   ##plot box and whisker
-  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network_spo.png", 
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_prd_exo.png", 
       width = 960, height = 480, units = "px")
   g<-ggplot(pids09,aes(x=Month_Delivered, y=pid_to_rteg))
-  g+geom_boxplot()+labs(title="SPO Network PID-to-RTEG Cycle Times", x="Month of RTEG", y="Cycle Time in days")
+  g+geom_boxplot()+labs(title="EXO PRD PID-to-RTEG Cycle Times", x="Month of RTEG", y="Cycle Time in days")
   dev.off()
   
   

@@ -29,6 +29,7 @@ milestonect<-function(){
   file_loc2 <- file.path(path, file2)
   
   desired_project_category<-c("PRD","Network")
+  desired_eg<-c("O365 Exchange")
   
   ## read the deployment performance file
   pids <- read.csv(file_loc1, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
@@ -48,41 +49,41 @@ milestonect<-function(){
   pids$RTEGActualDeliveryDate <- as.Date(pids$RTEGActualDeliveryDate, format = "%m/%d/%Y")
   
   ##subsetting to correct data
-  pids03<-pids[which(pids$EG=="O365 SharePoint"),]
+  pids03<-pids[which(pids$EG %in% desired_eg),]
   pids05<-pids03[which(pids03$RTEGActualDeliveryDate>"2016-01-01"),]
   pids07<-pids05[which(pids05$ProjectCategory %in% desired_project_category),]
   pids09<-pids07[which(pids07$DeploymentClass=="New Deployment"),]
 
   ##join the merge table with the pids table
-  SQLQuery1 <- "SELECT p.DeliveryNumber
-  ,p.RTEGActualDeliveryDate
-  ,p.EG
-  ,p.ProjectCategory
-  ,p.DeploymentClass
-  ,p.WorkOrderName
-  ,p.WorkOrderCycleTime
-  ,p.MilestoneName
-  ,p.ProjectReadinessValue
-  ,p.NetworkReadinessValue
-  ,p.CablingReadinessValue
-  ,p.ProcurementValue
-  ,p.DeliveryReadinessValue
-  ,p.ReceivingValue
-  ,p.BoltandEnergizeValue
-  ,p.CableValidationValue
-  ,p.ConfigureVerifyNetworkValue
-  ,p.OperationalAcceptanceValue
-  ,w.WaveCategory
-  FROM pids09 p
-  LEFT JOIN spowaves w 
-  ON p.DeliveryNumber = w.DeliveryNumber"
+  ##SQLQuery1 <- "SELECT p.DeliveryNumber
+  ##,p.RTEGActualDeliveryDate
+  ##,p.EG
+  ##,p.ProjectCategory
+  ##,p.DeploymentClass
+  ##,p.WorkOrderName
+  ##,p.WorkOrderCycleTime
+  ##,p.MilestoneName
+  ##,p.ProjectReadinessValue
+  ##,p.NetworkReadinessValue
+  ##,p.CablingReadinessValue
+  ##,p.ProcurementValue
+  ##,p.DeliveryReadinessValue
+  ##,p.ReceivingValue
+  ##,p.BoltandEnergizeValue
+  ##,p.CableValidationValue
+  ##,p.ConfigureVerifyNetworkValue
+  ##,p.OperationalAcceptanceValue
+  ##,w.WaveCategory
+  ##FROM pids09 p
+  ##LEFT JOIN spowaves w 
+  ##ON p.DeliveryNumber = w.DeliveryNumber"
   
-  pids12 <- sqldf(SQLQuery1)
+  ##pids12 <- sqldf(SQLQuery1)
   
   ##subset down to unique values per row
-  pids14<-unique(pids12)
+  pids14<-unique(pids09)
   
-  pids15<-mutate(pids14, month_delivered = month(RTEGActualDeliveryDate, label = TRUE))
+  pids15<-mutate(pids14, month_delivered = month(RTEGActualDeliveryDate, label = TRUE), workordervariance = WorkOrderCycleTime/WorkOrderPlannedCycletime)
   
   ##split into network and PRD pids
   pids16<-pids15[which(pids15$ProjectCategory=="Network"),]
@@ -109,28 +110,28 @@ milestonect<-function(){
   pids39<-pids28[which(pids28$MilestoneName %in% targetmilestone9),]
   
   ##plot1
-  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data.png", 
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data_projectreadiness.png", 
       width = 960, height = 480, units = "px")
   g<-ggplot(pids31, aes(x=WorkOrderName, y=WorkOrderCycleTime, fill=WorkOrderName))
   g+geom_bar(stat="identity") + facet_wrap(~month_delivered)+labs(title="Project Readiness Milestone - Accumulated Days Spent per WO")
   dev.off()
   
   ##plot2
-  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data.png", 
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data_NWreadiness.png", 
       width = 960, height = 480, units = "px")
   g<-ggplot(pids32, aes(x=WorkOrderName, y=WorkOrderCycleTime, fill=WorkOrderName))
   g+geom_bar(stat="identity") + facet_wrap(~month_delivered)+labs(title="Network Readiness Milestone - Accumulated Days Spent per WO")
   dev.off()
   
   ##plot3
-  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data.png", 
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data_DCreadiness.png", 
       width = 960, height = 480, units = "px")
   g<-ggplot(pids33, aes(x=WorkOrderName, y=WorkOrderCycleTime, fill=WorkOrderName))
   g+geom_bar(stat="identity") + facet_wrap(~month_delivered)+labs(title="DC Readiness Milestone - Accumulated Days Spent per WO")
   dev.off()
   
   ##plot4
-  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data.png", 
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data_Procurement.png", 
       width = 960, height = 480, units = "px")
   g<-ggplot(pids34, aes(x=WorkOrderName, y=WorkOrderCycleTime, fill=WorkOrderName))
   g+geom_bar(stat="identity") + facet_wrap(~month_delivered)+labs(title="Procurement Milestone - Accumulated Days Spent per WO")

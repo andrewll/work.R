@@ -1,3 +1,23 @@
+---
+title: "NetworkMilestoneCT-tidy-data-process"
+author: "Andrew Llorente"
+date: "August 8, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Creating the data from the scrum pre-read document 
+
+Take the Excel sheet from the network vertical called "SPO NW Daily Scrum Pre Read . xlsx"
+Save it as a CSV file, with a filename "scrumpreread<date>", in the path specified in the script below.
+Use it as the input file for the R script: networkmilestonect.R
+
+
+
+```{networkmilestonect.r}
 networkmilestonect<-function(){
   
   ########################
@@ -16,7 +36,7 @@ networkmilestonect<-function(){
   path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
   
   ##define the deloyments file
-  file1 <- "scrumpreread8-08.csv"
+  file1 <- "scrumpreread2.csv"
 
   
   ##define the Deployments file path
@@ -53,3 +73,5 @@ networkmilestonect<-function(){
   dev.off()
   
 }
+```
+
