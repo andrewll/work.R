@@ -111,6 +111,7 @@ milestonect<-function(){
   targetmilestone7 <- c("Bolt and Energize")
   targetmilestone8 <- c("Physical Cabling")
   targetmilestone9 <- c("Operational Acceptance")
+  targetmilestone10<- c("Configure & Verify Network")
   pids31<-pids28[which(pids28$MilestoneName %in% targetmilestone1),]
   pids32<-pids28[which(pids28$MilestoneName %in% targetmilestone2),]
   pids33<-pids28[which(pids28$MilestoneName %in% targetmilestone3),]
@@ -120,6 +121,7 @@ milestonect<-function(){
   pids37<-pids28[which(pids28$MilestoneName %in% targetmilestone7),]
   pids38<-pids28[which(pids28$MilestoneName %in% targetmilestone8),]
   pids39<-pids28[which(pids28$MilestoneName %in% targetmilestone9),]
+  pids40<-pids28[which(pids28$MilestoneName %in% targetmilestone10),]
   
   ##plot1
   pids41<-pids31 %>%
@@ -160,42 +162,60 @@ milestonect<-function(){
   g+geom_bar(stat="identity") + facet_wrap(~month_delivered)+labs(title="Delivery Readiness Milestone - Accumulated Days Spent per WO")
   dev.off()
   
-  ##plot6
+  ##plot6 Receiving
+  pids46<-pids36 %>%
+    group_by(WorkOrderName,month_delivered) %>%
+    summarize(WorkOrder_CycleTime_95th=quantile(WorkOrderCycleTime,.95),Milestone_Name = "Receiving") %>%
+    arrange(month_delivered) 
   png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data_receiving.png", 
       width = 960, height = 480, units = "px")
-  g<-ggplot(pids36, aes(x=WorkOrderName, y=WorkOrderCycleTime, fill=WorkOrderName))
-  g+geom_bar(stat="identity") + facet_wrap(~month_delivered)+labs(title="Receiving Milestone - Accumulated Days Spent per WO")
+  g<-ggplot(pids46, aes(x=month_delivered, y=WorkOrder_CycleTime_95th, fill=WorkOrderName))
+  g+geom_bar(stat="identity") + facet_wrap(~WorkOrderName)+labs(title="Receiving Milestone - 95th% CT per WO")
   dev.off()
   
-  ##plot7
+  ##plot7 Bolt & Energize
+  pids47<-pids37 %>%
+    group_by(WorkOrderName,month_delivered) %>%
+    summarize(WorkOrder_CycleTime_95th=quantile(WorkOrderCycleTime,.95),Milestone_Name = "Bolt and Energize") %>%
+    arrange(month_delivered) 
   png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data_bolt_energize.png", 
       width = 960, height = 480, units = "px")
-  g<-ggplot(pids37, aes(x=WorkOrderName, y=WorkOrderCycleTime, fill=WorkOrderName))
-  g+geom_bar(stat="identity") + facet_wrap(~month_delivered)+labs(title="Bolt and Energize Milestone - Accumulated Days Spent per WO")
+  g<-ggplot(pids47, aes(x=month_delivered, y=WorkOrder_CycleTime_95th, fill=WorkOrderName))
+  g+geom_bar(stat="identity") + facet_wrap(~WorkOrderName)+labs(title="Bolt and Energize Milestone - 95th% CT per WO")
   dev.off()
   
-  ##plot8
+  ##plot8 Physical Cabling
+  pids48<-pids38 %>%
+    group_by(WorkOrderName,month_delivered) %>%
+    summarize(WorkOrder_CycleTime_95th=quantile(WorkOrderCycleTime,.95),Milestone_Name = "Physical Cabling") %>%
+    arrange(month_delivered) 
   png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data_phys_cabling.png", 
       width = 960, height = 480, units = "px")
-  g<-ggplot(pids38, aes(x=WorkOrderName, y=WorkOrderCycleTime, fill=WorkOrderName))
-  g+geom_bar(stat="identity") + facet_wrap(~month_delivered)+labs(title="Physical Cabling Milestone - Accumulated Days Spent per WO")
+  g<-ggplot(pids48, aes(x=month_delivered, y=WorkOrder_CycleTime_95th, fill=WorkOrderName))
+  g+geom_bar(stat="identity") + facet_wrap(~WorkOrderName)+labs(title="Physical Cabling Milestone - 95th% CT per WO")
   dev.off()
   
-  ##plot9
+  ##plot9 Ops Accept
+  pids49<-pids39 %>%
+    group_by(WorkOrderName,month_delivered) %>%
+    summarize(WorkOrder_CycleTime_95th=quantile(WorkOrderCycleTime,.95),Milestone_Name = "Operational Acceptance") %>%
+    arrange(month_delivered) 
   png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data_ops_accept.png", 
       width = 960, height = 480, units = "px")
-  g<-ggplot(pids39, aes(x=WorkOrderName, y=WorkOrderCycleTime, fill=WorkOrderName))
-  g+geom_bar(stat="identity") + facet_wrap(~month_delivered)+labs(title="Ops Accept Milestone - Accumulated Days Spent per WO")
+  g<-ggplot(pids49, aes(x=month_delivered, y=WorkOrder_CycleTime_95th, fill=WorkOrderName))
+  g+geom_bar(stat="identity") + facet_wrap(~WorkOrderName)+labs(title="Ops Accept Milestone - 95th% CT per WO")
   dev.off()
   
-  ##generate charts for network pids for Configure & Verify milestone
-  ##pids36<-pids16[which(pids16$MilestoneName=="Configure & Verify Network"),]
-  ##  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network_configverifymilestone_GFSD_data.png", 
-  ##    width = 960, height = 480, units = "px")
-  ##g<-ggplot(pids36, aes(x=month_delivered, y=WorkOrderCycleTime, fill=WorkOrderName))
-  ##g+geom_boxplot()+labs(title="SPO Network PIDs Config&Verify Milestone Cycle Times by Month of RTEG", x="Month of RTEG", y="Cycle Time in days")+
-  ##    geom_hline(yintercept = 29)
-  ##dev.off()
+  ##plot10 Configure & Verify milestone
+  pids50<-pids40 %>%
+    group_by(WorkOrderName,month_delivered) %>%
+    summarize(WorkOrder_CycleTime_95th=quantile(WorkOrderCycleTime,.95),Milestone_Name = "Configure & Verify Network") %>%
+    arrange(month_delivered) 
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data_confignetwork.png", 
+      width = 960, height = 480, units = "px")
+  g<-ggplot(pids50, aes(x=month_delivered, y=WorkOrder_CycleTime_95th, fill=WorkOrderName))
+  g+geom_bar(stat="identity") + facet_wrap(~WorkOrderName)+labs(title="Configure Verify Network Milestone - 95th% CT per WO")
+  dev.off()
   
   ##generate charts for PRD pids for Configure & Verify milestone
   pids48<-pids28[which(pids28$MilestoneName=="Configure & Verify Network"),]
