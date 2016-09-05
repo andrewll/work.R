@@ -29,12 +29,12 @@ milestonect<-function(){
   file_loc2 <- file.path(path, file2)
   
   desired_project_category<-c("PRD","Network")
-  desired_eg<-c("O365 Exchange")
+  desired_eg<-c("O365 SharePoint")
   
   ## read the deployment performance file
   pids <- read.csv(file_loc1, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
-  spowaves <- read.csv(file_loc2,
-                       header = TRUE, colClasses = NA, na.strings = "N/A", stringsAsFactors = TRUE)
+  ##spowaves <- read.csv(file_loc2,
+    ##                   header = TRUE, colClasses = NA, na.strings = "N/A", stringsAsFactors = TRUE)
   
   
   
@@ -42,14 +42,26 @@ milestonect<-function(){
   pidsnames <- gsub("\\.","",names(pids))
   colnames(pids) <- c(pidsnames)
   
-  spowavenames <-gsub("\\.","",names(spowaves))
-  colnames(spowaves) <-c(spowavenames)
+  ##spowavenames <-gsub("\\.","",names(spowaves))
+  ##colnames(spowaves) <-c(spowavenames)
   
   ##convert dates to date format for pids table
   pids$RTEGActualDeliveryDate <- as.Date(pids$RTEGActualDeliveryDate, format = "%m/%d/%Y")
   
   ##subsetting to correct data
-  pids03<-pids[which(pids$EG %in% desired_eg),]
+  pids02<-subset(pids, select=c("DeliveryNumber"
+                    ,"EG"
+                    ,"CommittedDeliveryDate"
+                    ,"RTEGActualDeliveryDate"
+                    ,"DataCenter"
+                    ,"DeploymentClass"
+                    ,"ProjectCategory"
+                    ,"MilestoneName"
+                    ,"WorkOrderName"
+                    ,"WorkOrderCycleTime"
+                    ,"WorkOrderPlannedCycletime"
+                    ,"WoadDock"))
+  pids03<-pids02[which(pids02$EG %in% desired_eg),]
   pids05<-pids03[which(pids03$RTEGActualDeliveryDate>"2016-01-01"),]
   pids07<-pids05[which(pids05$ProjectCategory %in% desired_project_category),]
   pids09<-pids07[which(pids07$DeploymentClass=="New Deployment"),]
@@ -83,7 +95,7 @@ milestonect<-function(){
   ##subset down to unique values per row
   pids14<-unique(pids09)
   
-  pids15<-mutate(pids14, month_delivered = month(RTEGActualDeliveryDate, label = TRUE), workordervariance = WorkOrderCycleTime/WorkOrderPlannedCycletime)
+  pids15<-mutate(pids14, month_delivered = format(RTEGActualDeliveryDate, "%m"), workordervariance = WorkOrderCycleTime/WorkOrderPlannedCycletime)
   
   ##split into network and PRD pids
   pids16<-pids15[which(pids15$ProjectCategory=="Network"),]
@@ -110,10 +122,14 @@ milestonect<-function(){
   pids39<-pids28[which(pids28$MilestoneName %in% targetmilestone9),]
   
   ##plot1
+  pids41<-pids31 %>%
+    group_by(WorkOrderName,month_delivered) %>%
+    summarize(WorkOrder_CycleTime_95th=quantile(WorkOrderCycleTime,.95),Milestone_Name = "Project Readiness") %>%
+    arrange(month_delivered) 
   png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data_projectreadiness.png", 
       width = 960, height = 480, units = "px")
-  g<-ggplot(pids31, aes(x=WorkOrderName, y=WorkOrderCycleTime, fill=WorkOrderName))
-  g+geom_bar(stat="identity") + facet_wrap(~month_delivered)+labs(title="Project Readiness Milestone - Accumulated Days Spent per WO")
+  g<-ggplot(pids41, aes(x=month_delivered, y=WorkOrder_CycleTime_95th, fill=WorkOrderName))
+  g+geom_bar(stat="identity")+facet_wrap(~WorkOrderName)+labs(title="Project Readiness Milestone - 95th% CT per WO")
   dev.off()
   
   ##plot2
