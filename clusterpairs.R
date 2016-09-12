@@ -69,6 +69,7 @@ clusterpair<-function(){
   ,p.Intent
   ,p.fiscalyear
   ,w.ProjectTitle
+  ,w.woadDock
   ,w.RequestedDeliveryDate
   ,w.DMEstimatedRTEGDate
   ,w.CommittedDeliveryDate
@@ -92,10 +93,12 @@ clusterpair<-function(){
     else pids13[i,]$RTEG<-as.Date(pids13[i,]$RTEGActualDeliveryDate, format = "%m/%d/%Y")
   }
   
-  pids15<-mutate(pids13, Live = RTEG + 15, crteg_month = month(CommittedDeliveryDate, label = TRUE)) 
+  pids15<-mutate(pids13, Live = RTEG + 15, crteg_month = format(CommittedDeliveryDate, "%Y-%m"), 
+                 dm_rteg_month = format(DMEstimatedRTEGDate,"%Y-%m"))
   
   pids17<-subset(pids15,select = c("fiscalyear","DeliveryNumber",
-                                   "Region","Pair","Status","Intent","RequestedDeliveryDate","RTEG","Live","CommittedDeliveryDate","crteg_month"))
+                                   "Region","Pair","Status","Intent","RequestedDeliveryDate","RTEG","Live","CommittedDeliveryDate",
+                                   "crteg_month","dm_rteg_month","woadDock","DataCenter"))
   pids19<-arrange(pids17,fiscalyear,Pair,RTEG)
                  
 

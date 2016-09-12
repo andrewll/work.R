@@ -24,6 +24,7 @@ cycletime5<-function(){
   #setup variables
   desired_project_category<-c("PRD")
   desired_eg<-c("O365 SharePoint")
+  itar<-c("443779","443780","455430","455254")
   
   ##set the path to DeploymentPerformance file
   path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
@@ -59,8 +60,9 @@ cycletime5<-function(){
   pids03 <- pids[which(pids$RTEGActualDeliveryDate > '2016-01-01'),]
   pids05 <- pids03[which(pids03$EG %in% desired_eg),]
   pids07 <- pids05[which(pids05$ProjectCategory %in% desired_project_category),]
+  pids08 <- pids07[which(!pids07$DeliveryNumber %in% itar),]
   
-  pids09 <- mutate(pids07, Month_Delivered = format(RTEGActualDeliveryDate, "%m"),
+  pids09 <- mutate(pids08, Month_Delivered = format(RTEGActualDeliveryDate, "%m"),
                    pid_to_rteg = RTEGActualDeliveryDate - ProjectCreationDate,
                    PIDCount = 1)
   
@@ -69,16 +71,17 @@ cycletime5<-function(){
     group_by(Month_Delivered) %>%
     summarize(pid_to_rteg_avg = mean(pid_to_rteg), 
               pid_to_rteg_95th = quantile(pid_to_rteg,.95, na.rm = TRUE), 
+              dock_to_rteg_mean = mean(DTR, na.rm = TRUE),
               dock_to_rteg_95th = quantile(DTR, .95, na.rm = TRUE),
               PIDCount = sum(PIDCount))
 
-  write.csv(pids11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/EXO-PRD-CT_test.csv")
+  write.csv(pids11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO-PRD-CT_test.csv")
   
   ##plot box and whisker
   png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_prd_spo.png", 
       width = 960, height = 480, units = "px")
   g<-ggplot(pids11,aes(x=Month_Delivered, y=dock_to_rteg_95th))
-  g+geom_bar(stat="identity")+labs(title="SPO PRD PID-to-RTEG Cycle Times", x="Month of RTEG", y="Cycle Time in days")
+  g+geom_bar(stat="identity")+labs(title="SPO PRD Dock-to-RTEG Cycle Times", x="Month of RTEG", y="Cycle Time in days")
   dev.off()
   
   
