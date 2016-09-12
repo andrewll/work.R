@@ -123,7 +123,7 @@ cycletime4<-function(){
   pids5<-pids4[which(pids4$ProjectCategory %in% desiredProjectCategory),]
   
   ##filter for PIDs in current fiscal year
-  pids6<-pids5[which(pids5$RTEGActualDeliveryDate>'2015-12-31'),]
+  pids6<-pids5[which(pids5$RTEGActualDeliveryDate>'2016-3-31'),]
   
   ##extract Andrew's pids based on Andrew's pre-set variables
   pids7<-pids6[which(pids6$EG %in% andreweg),]
@@ -174,8 +174,22 @@ cycletime4<-function(){
                         x="Month of RTEG", y="Cycle Time in days")
   dev.off()
   
-  ##plot separately
+  ##plot separately the PRD milestones
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_PRD_3majormilestones.png", 
+      width = 960, height = 480, units = "px")
+  par(mfrow=c(3,2), mar=c(10,8,2,1))
+  g<-ggplot(pids17, aes(x=Month_Delivered, y=value, fill = variable))
+  g+geom_boxplot()+facet_wrap(~variable)+labs(title="SPO Servers PIDs 3 Major Milestone Cycle Times by Month of RTEG", 
+                        x="Month of RTEG", y="Cycle Time in days")
+  dev.off()
   
-  
+  ##plot separately the network milestones
+  png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_network_3majormilestones.png", 
+      width = 960, height = 480, units = "px")
+  par(mfrow=c(3,2), mar=c(10,8,2,1))
+  g<-ggplot(pids19, aes(x=Month_Delivered, y=value, fill = variable))
+  g+geom_boxplot()+facet_wrap(~variable)+labs(title="SPO Network PIDs 3 Major Milestone Cycle Times by Month of RTEG", 
+                        x="Month of RTEG", y="Cycle Time in days")
+  dev.off()
   
 }
