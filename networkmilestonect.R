@@ -16,7 +16,7 @@ networkmilestonect<-function(){
   path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
   
   ##define the deloyments file
-  file1 <- "scrumpreread8-08.csv"
+  file1 <- "SPO_network_scrum_preread_2016_10_06.csv"
 
   
   ##define the Deployments file path
@@ -26,7 +26,7 @@ networkmilestonect<-function(){
   pids <- read.csv(file_loc1, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   
   ##convert dates to date format for pids table
-  pids$Date.Entering.CVN <- as.Date(pids$Date.Entering.CVN, format = "%m/%d/%Y")
+  pids$Date.Entering.CVN <- as.Date(pids$Date.Entering.CVN,, format = "%m/%d/%Y")
   pids$NW.Milestone.completion.date <- as.Date(pids$NW.Milestone.completion.date, format = "%m/%d/%Y")
   pids$CVN.SLA <- as.character(pids$CVN.SLA)
   
@@ -51,5 +51,12 @@ networkmilestonect<-function(){
   g<-ggplot(pids9,aes(x=month_delivered, y=CVN.CT, fill=CVN.SLA))
   g+geom_boxplot()+facet_wrap(~CVN.SLA)+labs(title="SPO PIDs - Config&Verify Milestone Cycle Times", x="Month of Milestone Exit", y="Cycle Time in days")
   dev.off()
+  
+  #output to excel
+  ##print table with summarized details by EG
+  write.csv(pids9,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/CSV_cycletime_boxplot_network_configverifymilestone.csv")
+  
+  
+  
   
 }

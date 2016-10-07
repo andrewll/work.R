@@ -27,7 +27,7 @@ cycletimemor<-function(){
   ##define abbreviations file
   file2 <- "morlist.csv"
   ##define input with PO Create and PO Approve dates
-  file5 <- "DeliveryPerformanceWithMilestone.csv"
+  file5 <- "ProjectDetailsbyMilestone.csv"
   
   ##define the Deployments file path
   file_loc1 <- file.path(path, file1)
@@ -45,17 +45,6 @@ cycletimemor<-function(){
   ##read pids with PO data
   dat <- read.csv(file_loc5, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   
-  ##convert dates to date format for pids table
-  pids$RTEGActualDeliveryDate <- as.Date(pids$RTEGActualDeliveryDate, format = "%m/%d/%Y")
-  pids$ReceivingDate <- as.Date(pids$ReceivingDate, format = "%m/%d/%Y")
-  pids$DemandCreatedDate<- as.Date(pids$DemandCreatedDate, format = "%m/%d/%Y")
-  pids$woadDock <- as.Date(pids$woadDock, format = "%m/%d/%Y")
-  pids$DM.Estimated.RTEG.Date <- as.Date(pids$DM.Estimated.RTEG.Date, format = "%m/%d/%Y")
-  pids$RequestedDeliveryDate <- as.Date(pids$RequestedDeliveryDate, format = "%m/%d/%Y")
-  pids$ProjectCreationDate <- as.Date(pids$ProjectCreationDate, format = "%m/%d/%Y")
-  pids$PO.Confirmed.Dock.Date <- as.Date(pids$PO.Confirmed.Dock.Date, format = "%m/%d/%Y")
-  pids$Current.Committed.Dock.Date <- as.Date(pids$Current.Committed.Dock.Date, format = "%m/%d/%Y")
-  pids$rtegActualMonth <- as.Date(pids$rtegActualMonth, format = "%m/%d/%Y")
   
   ##remove dots in header names in pids table
   pidsnames <- gsub("\\.","",names(pids))
@@ -67,9 +56,10 @@ cycletimemor<-function(){
   datnames <- gsub("\\.","",names(dat))
   colnames(dat) <- c(datnames)
   
-  ##convert dates to date format for dat table
-  dat$MaxPOCreateDate<- as.Date(dat$MaxPOCreateDate, format = "%m/%d/%Y")
-  dat$MaxPOApproveDate<- as.Date(dat$MaxPOApproveDate, format = "%m/%d/%Y")
+  ##remove duplicate column
+  dat$WoadDock <- NULL
+  
+  morlist2<-unique(morlist)
 
 
   
@@ -90,7 +80,7 @@ cycletimemor<-function(){
   ,p.ReceivingDate
   ,p.DMEstimatedRTEGDate
   ,p.DTR
-  FROM morlist w
+  FROM morlist2 w
   LEFT JOIN pids p
   ON w.DeliveryNumber = p.DeliveryNumber"
   
@@ -127,12 +117,24 @@ cycletimemor<-function(){
   ##remove duplicate rows
   pids9<-unique(pids7)
   
+  ##convert dates to date format for pids table
+  pids9$RTEGActualDeliveryDate <- as.Date(pids9$RTEGActualDeliveryDate, format = "%m/%d/%Y")
+  pids9$ReceivingDate <- as.Date(pids9$ReceivingDate, format = "%m/%d/%Y")
+  pids9$DemandCreatedDate<- as.Date(pids9$DemandCreatedDate, format = "%m/%d/%Y")
+  pids9$woadDock <- as.Date(pids9$woadDock, format = "%m/%d/%Y")
+  pids9$woadPOCreation<- as.Date(pids9$woadPOCreation, format = "%m/%d/%Y")
+  pids9$DMEstimatedRTEGDate <- as.Date(pids9$DMEstimatedRTEGDate, format = "%m/%d/%Y")
+  pids9$RequestedDeliveryDate <- as.Date(pids9$RequestedDeliveryDate, format = "%m/%d/%Y")
+  pids9$ProjectCreationDate <- as.Date(pids9$ProjectCreationDate, format = "%m/%d/%Y")
+  pids9$MaxPOCreateDate<- as.Date(pids9$MaxPOCreateDate, format = "%m/%d/%Y")
+  pids9$MaxPOApproveDate<- as.Date(pids9$MaxPOApproveDate, format = "%m/%d/%Y")
+  
   ## add calculated variables
   pids11 <- mutate(pids9, Year_Created = format(ProjectCreationDate,"%Y"), 
                   Month_Created = format(ProjectCreationDate, "%Y-%m"),
                   Month_Docked = format(woadDock, "%Y-%m"),
                   PIDCount = 1)
-  
+
   pids13 <- mutate(pids11, demandcreate_to_pidcreate = as.numeric(ProjectCreationDate - DemandCreatedDate),
                   pidcreate_to_pocreate = as.numeric(MaxPOCreateDate - ProjectCreationDate), 
                   pocreate_to_poapprove = as.numeric(MaxPOApproveDate - MaxPOCreateDate),
