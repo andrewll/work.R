@@ -25,7 +25,7 @@ cycletimemor<-function(){
   ##define the deloyments file
   file1 <- "DeliveryPerformance.csv"
   ##define abbreviations file
-  file2 <- "morlist.csv"
+  file2 <- "morlist_2016_10_13.csv"
   ##define input with PO Create and PO Approve dates
   file5 <- "ProjectDetailsbyMilestone.csv"
   
@@ -108,6 +108,11 @@ cycletimemor<-function(){
   ,p.DTR
   ,w.MaxPOCreateDate
   ,w.MaxPOApproveDate
+  ,w.ReceivingValue
+  ,w.BoltandEnergizeValue
+  ,w.PhysicalCablingValue
+  ,w.ConfigureVerifyNetworkValue
+  ,w.OperationalAcceptanceValue
   FROM pids5 p
   LEFT JOIN dat w
   ON p.DeliveryNumber = w.DeliveryNumber"
@@ -160,6 +165,11 @@ cycletimemor<-function(){
                                     ,"pocreate_to_poapprove"
                                     ,"poapprove_to_dock"
                                     ,"DTR"
+                                    ,"ReceivingValue"
+                                    ,"BoltandEnergizeValue"
+                                    ,"PhysicalCablingValue"
+                                    ,"ConfigureVerifyNetworkValue"
+                                    ,"OperationalAcceptanceValue"
   ))
   
   #remove NA values
