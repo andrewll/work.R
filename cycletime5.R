@@ -69,7 +69,7 @@ cycletime5<-function(){
   ##summarize
   pids11 <- pids09 %>% 
     group_by(Month_Delivered) %>%
-    summarize(pid_to_rteg_avg = mean(pid_to_rteg), 
+    summarize(pid_to_rteg_mean = mean(pid_to_rteg), 
               pid_to_rteg_95th = quantile(pid_to_rteg,.95, na.rm = TRUE), 
               dock_to_rteg_mean = mean(DTR, na.rm = TRUE),
               dock_to_rteg_95th = quantile(DTR, .95, na.rm = TRUE),
