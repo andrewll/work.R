@@ -60,13 +60,19 @@ cycletime5<-function(){
   pids03 <- pids[which(pids$RTEGActualDeliveryDate > '2016-01-01'),]
   pids05 <- pids03[which(pids03$EG %in% desired_eg),]
   pids07 <- pids05[which(pids05$ProjectCategory %in% desired_project_category),]
-  pids08 <- pids07[which(!pids07$DeliveryNumber %in% itar),]
+  pids08 <- pids07[which(!pids07$DeliveryNumber %in% itar),]  ##exclude ITAR
   
-  pids09 <- mutate(pids08, Month_Delivered = format(RTEGActualDeliveryDate, "%m"),
+  ##mutate PIDs including ITAR
+  pids09 <- mutate(pids07, Month_Delivered = format(RTEGActualDeliveryDate, "%m"),
                    pid_to_rteg = RTEGActualDeliveryDate - ProjectCreationDate,
                    PIDCount = 1)
   
-  ##summarize
+  ##mutate PIDs excluding ITAR
+  pids10 <- mutate(pids08, Month_Delivered = format(RTEGActualDeliveryDate, "%m"),
+                   pid_to_rteg = RTEGActualDeliveryDate - ProjectCreationDate,
+                   PIDCount = 1)
+  
+  ##summarize including ITAR
   pids11 <- pids09 %>% 
     group_by(Month_Delivered) %>%
     summarize(pid_to_rteg_mean = mean(pid_to_rteg), 
@@ -74,8 +80,28 @@ cycletime5<-function(){
               dock_to_rteg_mean = mean(DTR, na.rm = TRUE),
               dock_to_rteg_95th = quantile(DTR, .95, na.rm = TRUE),
               PIDCount = sum(PIDCount))
+  
+  ##summarize excluding ITAR
+  pids12 <- pids10 %>% 
+    group_by(Month_Delivered) %>%
+    summarize(pid_to_rteg_mean = mean(pid_to_rteg), 
+              pid_to_rteg_95th = quantile(pid_to_rteg,.95, na.rm = TRUE), 
+              dock_to_rteg_mean = mean(DTR, na.rm = TRUE),
+              dock_to_rteg_95th = quantile(DTR, .95, na.rm = TRUE),
+              PIDCount = sum(PIDCount))
 
-  write.csv(pids11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO-PRD-CT_test.csv")
+  ##write to file - including ITAR
+  write.csv(pids11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_PRD_Monthly_CycleTime_summarized_withITAR.csv")
+  write.csv(pids09,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_PRD_Monthly_CycleTime_detailed_withITAR.csv")
+  
+  ##write to file - excluding ITAR
+  write.csv(pids12,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_PRD_Monthly_CycleTime_summarized_withoutITAR.csv")
+  write.csv(pids10,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_PRD_Monthly_CycleTime_detailed_withoutITAR.csv")
+  
+  
+  
+  
+  
   
   ##plot box and whisker
   png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_boxplot_prd_spo.png", 

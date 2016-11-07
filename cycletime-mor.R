@@ -25,7 +25,7 @@ cycletimemor<-function(){
   ##define the deloyments file
   file1 <- "DeliveryPerformance.csv"
   ##define abbreviations file
-  file2 <- "morlist_2016_10_13.csv"
+  file2 <- "spo-pairing-fy16.csv"
   ##define input with PO Create and PO Approve dates
   file5 <- "ProjectDetailsbyMilestone.csv"
   

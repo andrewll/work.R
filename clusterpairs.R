@@ -15,6 +15,10 @@ clusterpair<-function(){
   ##               "/WindowsPowerShell/Scripts/Deployments")
   path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
   
+  ##setup special variables
+  ##go_locals<-c("457404","457405","458216","458217","458967","458968","458964","458965","458966")
+  go_locals<-c("458216","458217")
+  
   
   ##define the deloyments file
   file1 <- "DeliveryPerformance.csv"
@@ -33,19 +37,6 @@ clusterpair<-function(){
   ## read the waves table
   spopairs <- read.csv(file_loc5,
                        header = TRUE, colClasses = NA, na.strings = "N/A", stringsAsFactors = TRUE)
-  
-  ##convert dates to date format for pids table
-  pids$RTEGActualDeliveryDate <- as.Date(pids$RTEGActualDeliveryDate, format = "%m/%d/%Y")
-  pids$ReceivingDate <- as.Date(pids$ReceivingDate, format = "%m/%d/%Y")
-  pids$woadDock <- as.Date(pids$woadDock, format = "%m/%d/%Y")
-  pids$DM.Estimated.RTEG.Date <- as.Date(pids$DM.Estimated.RTEG.Date, format = "%m/%d/%Y")
-  pids$RequestedDeliveryDate <- as.Date(pids$RequestedDeliveryDate, format = "%m/%d/%Y")
-  pids$ProjectCreationDate <- as.Date(pids$ProjectCreationDate, format = "%m/%d/%Y")
-  pids$PO.Confirmed.Dock.Date <- as.Date(pids$PO.Confirmed.Dock.Date, format = "%m/%d/%Y")
-  pids$Current.Committed.Dock.Date <- as.Date(pids$Current.Committed.Dock.Date, format = "%m/%d/%Y")
-  pids$rtegActualMonth <- as.Date(pids$rtegActualMonth, format = "%m/%d/%Y")
-  pids$CommittedDeliveryDate <- as.Date(pids$CommittedDeliveryDate, format = "%m/%d/%Y")
-  pids$RequestedDeliveryDate <- as.Date(pids$RequestedDeliveryDate, format = "%m/%d/%Y")
   
   ##convert spopairs DeliveryNumber to character
   spopairs$DeliveryNumber<-as.character(spopairs$DeliveryNumber)
@@ -82,6 +73,14 @@ clusterpair<-function(){
   
   pids9 <- sqldf(SQLQuery1)
   
+  ##convert dates to date format for pids table
+  pids9$RTEGActualDeliveryDate <- as.Date(pids9$RTEGActualDeliveryDate, format = "%m/%d/%Y")
+  pids9$woadDock <- as.Date(pids9$woadDock, format = "%m/%d/%Y")
+  pids9$DMEstimatedRTEGDate <- as.Date(pids9$DMEstimatedRTEGDate, format = "%m/%d/%Y")
+  pids9$RequestedDeliveryDate <- as.Date(pids9$RequestedDeliveryDate, format = "%m/%d/%Y")
+  pids9$CommittedDeliveryDate <- as.Date(pids9$CommittedDeliveryDate, format = "%m/%d/%Y")
+  pids9$RequestedDeliveryDate <- as.Date(pids9$RequestedDeliveryDate, format = "%m/%d/%Y")
+  
   ##subset to just the PIDs in the pairing list
   pids11<-pids9[which(!is.na(pids9$Pair)),]
   
@@ -93,8 +92,15 @@ clusterpair<-function(){
     else pids13[i,]$RTEG<-as.Date(pids13[i,]$RTEGActualDeliveryDate, format = "%m/%d/%Y")
   }
   
+  ##calculate Live date and RTEG month
   pids15<-mutate(pids13, Live = RTEG + 15, crteg_month = format(CommittedDeliveryDate, "%Y-%m"), 
                  dm_rteg_month = format(DMEstimatedRTEGDate,"%Y-%m"))
+  
+  ##calculate correct Live date for go_locals
+  for(i in 1:nrow(pids15)){
+    if(pids15[i,]$DeliveryNumber %in% go_locals)
+      pids15[i,]$Live<-pids15[i,]$RTEG+30
+  }
   
   pids17<-subset(pids15,select = c("fiscalyear","DeliveryNumber",
                                    "Region","Pair","Status","Intent","RequestedDeliveryDate","RTEG","Live","CommittedDeliveryDate",

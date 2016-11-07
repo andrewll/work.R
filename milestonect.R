@@ -70,20 +70,20 @@ milestonect<-function(){
   
 
   ##join the merge table with the pids table
-  ##SQLQuery1 <- "SELECT p.DeliveryNumber
-  ##,p.RTEGActualDeliveryDate
-  ##,p.EG
-  ##,p.ProjectCategory
-  ##,p.DeploymentClass
-  ##,p.WorkOrderName
-  ##,p.WorkOrderCycleTime
-  ##,p.MilestoneName
-  ##,w.WaveCategory
-  ##FROM pids09 p
-  ##LEFT JOIN spowaves w 
-  ##ON p.DeliveryNumber = w.DeliveryNumber"
+  SQLQuery1 <- "SELECT p.DeliveryNumber
+  ,p.RTEGActualDeliveryDate
+  ,p.EG
+  ,p.ProjectCategory
+  ,p.DeploymentClass
+  ,p.WorkOrderName
+  ,p.WorkOrderCycleTime
+  ,p.MilestoneName
+  ,w.WaveCategory
+  FROM pids09 p
+  LEFT JOIN spowaves w 
+  ON p.DeliveryNumber = w.DeliveryNumber"
   
-  ##pids12 <- sqldf(SQLQuery1)
+  pids12 <- sqldf(SQLQuery1)
   
   ##subset down to unique values per row
   pids14<-unique(pids12)
