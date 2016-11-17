@@ -16,10 +16,13 @@ milestonect<-function(){
   library(reshape2)
   library(lubridate)
   
+  # basic set up clear all existing variables 
+  rm(list = ls(all=T))
+  
   path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
   
   ##define the deloyments file
-  file1 <- "DeliveryPerformanceWithMilestone.csv"
+  file1 <- "ProjectDetailsbyMilestone.csv"
   ##define SPO waves
   file2 <- "spowaves.csv"
   
@@ -28,8 +31,10 @@ milestonect<-function(){
   ##define the spo waves file path
   file_loc2 <- file.path(path, file2)
   
+
+  
   desired_project_category<-c("PRD","Network")
-  desired_eg<-c("O365 SharePoint")
+  desired_eg<-c("O365 Exchange")
   itar<-c("443779","443780","455430","455254")
   
   ## read the deployment performance file
@@ -204,12 +209,12 @@ milestonect<-function(){
   ##plot10 Configure & Verify milestone
   pids50<-pids40 %>%
     group_by(WorkOrderName,month_delivered) %>%
-    summarize(WorkOrder_CycleTime_95th=quantile(WorkOrderCycleTime,.95),Milestone_Name = "Configure & Verify Network") %>%
+    summarize(WorkOrder_CycleTime_median=quantile(WorkOrderCycleTime,.5),Milestone_Name = "Configure & Verify Network") %>%
     arrange(month_delivered) 
   png("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/cycletime_milestone_gfsd_data_confignetwork.png", 
       width = 960, height = 480, units = "px")
-  g<-ggplot(pids50, aes(x=month_delivered, y=WorkOrder_CycleTime_95th, fill=WorkOrderName))
-  g+geom_bar(stat="identity") + facet_wrap(~WorkOrderName)+labs(title="Configure Verify Network Milestone - 95th% CT per WO")
+  g<-ggplot(pids50, aes(x=month_delivered, y=WorkOrder_CycleTime_median, fill=WorkOrderName))
+  g+geom_bar(stat="identity") + facet_wrap(~WorkOrderName)+labs(title="Configure Verify Network Milestone - Median CT per WO")
   dev.off()
   
   ##generate charts for PRD pids for Configure & Verify milestone

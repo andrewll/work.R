@@ -22,7 +22,7 @@ cycletime5<-function(){
   rm(list = ls(all=T))
   
   #setup variables
-  desired_project_category<-c("PRD")
+  desired_project_category<-c("PRD","Network")
   desired_eg<-c("O365 SharePoint")
   itar<-c("443779","443780","455430","455254")
   
