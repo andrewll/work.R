@@ -22,9 +22,10 @@ cycletime5<-function(){
   rm(list = ls(all=T))
   
   #setup variables
-  desired_project_category<-c("PRD","Network")
-  desired_eg<-c("O365 SharePoint")
-  itar<-c("443779","443780","455430","455254")
+  desired_project_category<-c("Discrete")
+  ##desired_eg<-c("O365 SharePoint")
+  desired_eg<-c("FOPE")
+  itar<-c("443779","443780","455430","455254","443464","443465","455244","455253")
   
   ##set the path to DeploymentPerformance file
   path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
@@ -91,13 +92,16 @@ cycletime5<-function(){
               PIDCount = sum(PIDCount))
 
   ##write to file - including ITAR
-  write.csv(pids11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_PRD_Monthly_CycleTime_summarized_withITAR.csv")
-  write.csv(pids09,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_PRD_Monthly_CycleTime_detailed_withITAR.csv")
+  ##write.csv(pids11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_network_Monthly_CycleTime_summarized_withITAR.csv")
+  ##write.csv(pids09,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_network_Monthly_CycleTime_detailed_withITAR.csv")
   
   ##write to file - excluding ITAR
-  write.csv(pids12,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_PRD_Monthly_CycleTime_summarized_withoutITAR.csv")
-  write.csv(pids10,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_PRD_Monthly_CycleTime_detailed_withoutITAR.csv")
+  ##write.csv(pids12,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_PRD_Monthly_CycleTime_summarized_withoutITAR.csv")
+  ##write.csv(pids10,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/SPO_PRD_Monthly_CycleTime_detailed_withoutITAR.csv")
   
+  ##write to file - including ITAR
+  write.csv(pids11,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/FOPE_discrete_Monthly_CycleTime_summarized_withITAR.csv")
+  write.csv(pids09,file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/FOPE_discrete_Monthly_CycleTime_detailed_withITAR.csv")
   
   
   
