@@ -59,6 +59,7 @@ clusterpair<-function(){
   ,p.Region
   ,p.Intent
   ,p.fiscalyear
+  ,p.wave
   ,w.ProjectTitle
   ,w.woadDock
   ,w.RequestedDeliveryDate
@@ -104,7 +105,7 @@ clusterpair<-function(){
   
   pids17<-subset(pids15,select = c("fiscalyear","DeliveryNumber",
                                    "Region","Pair","Status","Intent","RequestedDeliveryDate","RTEG","Live","CommittedDeliveryDate",
-                                   "crteg_month","dm_rteg_month","woadDock","DataCenter"))
+                                   "crteg_month","dm_rteg_month","woadDock","DataCenter","wave"))
   pids19<-arrange(pids17,fiscalyear,Pair,RTEG)
                  
 
