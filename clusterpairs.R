@@ -94,7 +94,7 @@ clusterpair<-function(){
   }
   
   ##calculate Live date and RTEG month
-  pids15<-mutate(pids13, Live = RTEG + 15, crteg_month = format(CommittedDeliveryDate, "%Y-%m"), 
+  pids15<-mutate(pids13, RTGM = RTEG + 15, Live = RTGM + 15, crteg_month = format(CommittedDeliveryDate, "%Y-%m"), 
                  dm_rteg_month = format(DMEstimatedRTEGDate,"%Y-%m"))
   
   ##calculate correct Live date for go_locals
@@ -104,7 +104,7 @@ clusterpair<-function(){
   }
   
   pids17<-subset(pids15,select = c("fiscalyear","DeliveryNumber",
-                                   "Region","Pair","Status","Intent","RequestedDeliveryDate","RTEG","Live","CommittedDeliveryDate",
+                                   "Region","Pair","Status","Intent","RequestedDeliveryDate","RTEG","RTGM","Live", "CommittedDeliveryDate",
                                    "crteg_month","dm_rteg_month","woadDock","DataCenter","wave"))
   pids19<-arrange(pids17,fiscalyear,Pair,RTEG)
                  
