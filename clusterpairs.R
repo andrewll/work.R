@@ -7,6 +7,7 @@ clusterpair<-function(){
   library(reshape2)
   library(lubridate)
   
+  
   # basic set up clear all existing variables 
   rm(list = ls(all=T))
   
