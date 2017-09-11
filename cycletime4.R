@@ -153,7 +153,7 @@ cycletime4<-function(){
   pids19 <- pids16[which(pids16$ProjectCategory=="Network"),]
 
   
-  ##summarize
+  ##summarize at the 95th percentile
   pids27 <- pids17 %>%
     group_by(Month_Delivered,variable) %>%
     summarize(Ninety_fifth_percentile = quantile(value, .95, na.rm = TRUE)) %>%

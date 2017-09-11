@@ -68,6 +68,8 @@ clusterpair<-function(){
   ,w.CommittedDeliveryDate
   ,w.RTEGActualDeliveryDate
   ,w.DataCenter
+  ,w.PropertyGroup
+  ,W.DemandID
 
   FROM spopairs p
   LEFT JOIN pids7 w
@@ -104,7 +106,7 @@ clusterpair<-function(){
       pids15[i,]$Live<-pids15[i,]$RTEG+30
   }
   
-  pids17<-subset(pids15,select = c("fiscalyear","DeliveryNumber",
+  pids17<-subset(pids15,select = c("fiscalyear","DeliveryNumber","PropertyGroup","DemandID",
                                    "Region","Pair","Status","Intent","RequestedDeliveryDate","RTEG","RTGM","Live", "CommittedDeliveryDate",
                                    "crteg_month","dm_rteg_month","woadDock","DataCenter","wave"))
   pids19<-arrange(pids17,fiscalyear,Pair,RTEG)
@@ -112,6 +114,14 @@ clusterpair<-function(){
 
   ##print output
   write.csv(pids19,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/output_cluster_pairs.csv")
+  
+  ##web scraping test
+  ##con = url("http://spdeployment.azurewebsites.net/#/deployment/list/4")
+  ##htmlCode = readLines(con)
+  ##close(con)
+  ##htmlCode
+  
+  
   
   
 }
