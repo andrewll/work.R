@@ -33,6 +33,7 @@ morgap<-function(){
   pids$CreationDate <- as.Date(pids$CreationDate, format = "%m/%d/%Y")
   pids$ActualDockMax <- as.Date(pids$ActualDockMax, format = "%m/%d/%Y")
   pids$ProjectDelivered <- as.Date(pids$ProjectDelivered, format = "%m/%d/%Y")
+  pids$POCreateMax <- as.Date(pids$POCreateMax, format = "%m/%d/%Y")
   
   ##filter out the cancelled
   pids2<-pids[which(pids$ProjectStatusName!="Cancelled"),]

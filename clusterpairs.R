@@ -19,6 +19,7 @@ clusterpair<-function(){
   ##setup special variables
   ##go_locals<-c("457404","457405","458216","458217","458967","458968","458964","458965","458966")
   go_locals<-c("458216","458217")
+  todaysdate<-today()
   
   
   ##define the deloyments file
@@ -98,7 +99,7 @@ clusterpair<-function(){
   
   ##calculate Live date and RTEG month
   pids15<-mutate(pids13, RTGM = RTEG + 14, Live = RTGM + 14, crteg_month = format(CommittedDeliveryDate, "%Y-%m"), 
-                 dm_rteg_month = format(DMEstimatedRTEGDate,"%Y-%m"))
+                 dm_rteg_month = format(DMEstimatedRTEGDate,"%Y-%m"), wipdays="")
   
   ##calculate correct Live date for go_locals
   for(i in 1:nrow(pids15)){
@@ -106,9 +107,19 @@ clusterpair<-function(){
       pids15[i,]$Live<-pids15[i,]$RTEG+30
   }
   
+  ##calculate Dock-to-RTEG for WIP
+  for(i in 1:nrow(pids15)){
+    currentwoadDock<-pids15[i,]$woadDock
+    if(!is.na(pids15[i,]$RTEGActualDeliveryDate)) pids15[i,]$wipdays<-"RTEG'd"
+      else
+      if(is.na(currentwoadDock)) pids15[i,]$wipdays<-"Pending Dock"
+        else if(currentwoadDock < todaysdate)
+          pids15[i,]$wipdays<-as.integer(todaysdate-currentwoadDock)
+      }
+  
   pids17<-subset(pids15,select = c("fiscalyear","DeliveryNumber","PropertyGroup","DemandID",
                                    "Region","Pair","Status","Intent","RequestedDeliveryDate","RTEG","RTGM","Live", "CommittedDeliveryDate",
-                                   "crteg_month","dm_rteg_month","woadDock","DataCenter","wave"))
+                                   "crteg_month","dm_rteg_month","woadDock","DataCenter","wave","wipdays"))
   pids19<-arrange(pids17,fiscalyear,Pair,RTEG)
                  
 

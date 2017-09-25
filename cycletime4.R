@@ -31,7 +31,7 @@ cycletime4<-function(){
   lorindaeg<-c("AP","Not Set","Default","NonWebComm")
   lorindapg<-c("Cosmos","Search","TechOps", "Visual Studio Cloud Services (QBuild)", "Sustained Engineering", "OneDrive")
   sandeepeg<-c("XBOX","ISSD (Azure AAD)")
-  andreweg<-c("O365 SharePoint")
+  andreweg<-c("O365 SharePoint", "FOPE")
   chandraeg<-c("O365 Exchange")
   
   ##set the path to DeploymentPerformance file
@@ -124,7 +124,7 @@ cycletime4<-function(){
   pids5<-pids4[which(pids4$ProjectCategory %in% desiredProjectCategory),]
   
   ##filter for PIDs in current fiscal year
-  pids6<-pids5[which(pids5$RTEGActualDeliveryDate>'2016-3-31'),]
+  pids6<-pids5[which(pids5$RTEGActualDeliveryDate>'2017-1-01'),]
   
   ##extract Andrew's pids based on Andrew's pre-set variables
   pids7<-pids6[which(pids6$EG %in% andreweg),]
