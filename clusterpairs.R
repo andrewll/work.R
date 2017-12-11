@@ -20,10 +20,11 @@ clusterpair<-function(){
   ##go_locals<-c("457404","457405","458216","458217","458967","458968","458964","458965","458966")
   go_locals<-c("458216","458217")
   todaysdate<-today()
+  desired_eg<-c("O365 SharePoint")
   
   
   ##define the deloyments file
-  file1 <- "DeliveryPerformance.csv"
+  file1 <- "DeliveryProjectContentReport.csv"
   ##define SPO pairs
   file5 <- "spo-pairing-fy16.csv"
   
@@ -53,7 +54,7 @@ clusterpair<-function(){
   
   pids3<-pids[which(pids$DeploymentClass=="New Deployment"),]
   pids5<-pids3[which(pids3$ProjectCategory=="PRD"),]
-  pids7<-pids5[which(pids5$EG=="O365 SharePoint"),]
+  pids7<-pids5[which(pids5$EngineeringGroup %in% desired_eg),]
   
   ##join the merge table with the pids table
   SQLQuery1 <- "SELECT p.DeliveryNumber
@@ -63,11 +64,12 @@ clusterpair<-function(){
   ,p.fiscalyear
   ,p.wave
   ,w.ProjectTitle
-  ,w.woadDock
-  ,w.RequestedDeliveryDate
-  ,w.DMEstimatedRTEGDate
-  ,w.CommittedDeliveryDate
-  ,w.RTEGActualDeliveryDate
+  ,w.ActualDockMax
+  ,w.CurrentCommittedDockMax
+  ,w.RequestedDelivery
+  ,w.EstimatedRTEGDate
+  ,w.CommittedDelivery
+  ,w.ActualCloseDate
   ,w.DataCenter
   ,w.PropertyGroup
   ,W.DemandID
@@ -79,47 +81,61 @@ clusterpair<-function(){
   pids9 <- sqldf(SQLQuery1)
   
   ##convert dates to date format for pids table
-  pids9$RTEGActualDeliveryDate <- as.Date(pids9$RTEGActualDeliveryDate, format = "%m/%d/%Y")
-  pids9$woadDock <- as.Date(pids9$woadDock, format = "%m/%d/%Y")
-  pids9$DMEstimatedRTEGDate <- as.Date(pids9$DMEstimatedRTEGDate, format = "%m/%d/%Y")
-  pids9$RequestedDeliveryDate <- as.Date(pids9$RequestedDeliveryDate, format = "%m/%d/%Y")
-  pids9$CommittedDeliveryDate <- as.Date(pids9$CommittedDeliveryDate, format = "%m/%d/%Y")
-  pids9$RequestedDeliveryDate <- as.Date(pids9$RequestedDeliveryDate, format = "%m/%d/%Y")
+  pids9$ActualCloseDate <- as.Date(pids9$ActualCloseDate, format = "%m/%d/%Y")
+  pids9$ActualDockMax <- as.Date(pids9$ActualDockMax, format = "%m/%d/%Y")
+  pids9$CurrentCommittedDockMax <-as.Date(pids9$CurrentCommittedDockMax, format = "%m/%d/%Y")
+  pids9$EstimatedRTEGDate <- as.Date(pids9$EstimatedRTEGDate, format = "%m/%d/%Y")
+  pids9$RequestedDelivery <- as.Date(pids9$RequestedDelivery, format = "%m/%d/%Y")
+  pids9$CommittedDelivery <- as.Date(pids9$CommittedDelivery, format = "%m/%d/%Y")
+  pids9$ActualCloseDate <- as.Date(pids9$ActualCloseDate, format = "%m/%d/%Y")
   
   ##subset to just the PIDs in the pairing list
   pids11<-pids9[which(!is.na(pids9$Pair)),]
+  pids12<-pids11[which(!is.na(pids11$DeliveryNumber)),]
   
   ##format dataframe for output - Region variable and RTEG variable
-  pids13<-mutate(pids11, RTEG = as.Date(NA), Status = " ")
+  pids13<-mutate(pids12, RTEG = as.Date(NA), Status = " ")
   for(i in 1:nrow(pids13)){
-    if(is.na(pids13[i,]$RTEGActualDeliveryDate)) 
-      pids13[i,]$RTEG<-as.Date(pids13[i,]$DMEstimatedRTEGDate,format = "%m/%d/%Y")
-    else pids13[i,]$RTEG<-as.Date(pids13[i,]$RTEGActualDeliveryDate, format = "%m/%d/%Y")
+    if(is.na(pids13[i,]$ActualCloseDate)) 
+      pids13[i,]$RTEG<-as.Date(pids13[i,]$EstimatedRTEGDate,format = "%m/%d/%Y")
+    else pids13[i,]$RTEG<-as.Date(pids13[i,]$ActualCloseDate, format = "%m/%d/%Y")
   }
   
   ##calculate Live date and RTEG month
-  pids15<-mutate(pids13, RTGM = RTEG + 14, Live = RTGM + 14, crteg_month = format(CommittedDeliveryDate, "%Y-%m"), 
-                 dm_rteg_month = format(DMEstimatedRTEGDate,"%Y-%m"), wipdays="")
+  pids15<-mutate(pids13, RTGM = RTEG + 14, Live = RTGM + 14, crteg_month = format(CommittedDelivery, "%Y-%m"), 
+                 dm_rteg_month = format(EstimatedRTEGDate,"%Y-%m"), wipdays="")
+  
+  ## set Live and Buildout status 
+  for(i in 1:nrow(pids15)){
+    if(pids15[i,]$Live<=todaysdate)
+      pids15[i,]$Status<-c("Live")
+    else if(pids15[i,]$RTGM<=todaysdate)
+      pids15[i,]$Status<-c("Buildout")
+    else if(pids15[i,]$RTEG<=todaysdate)
+      pids15[i,]$Status<-c("Buildout")
+    else pids15[i,]$Status<-c("")
+  }
   
   ##calculate correct Live date for go_locals
-  for(i in 1:nrow(pids15)){
-    if(pids15[i,]$DeliveryNumber %in% go_locals)
-      pids15[i,]$Live<-pids15[i,]$RTEG+30
-  }
+  ##for(i in 1:nrow(pids15)){
+  ##  if(pids15[i,]$DeliveryNumber %in% go_locals)
+  ##    pids15[i,]$Live<-pids15[i,]$RTEG+30
+  ##}
   
   ##calculate Dock-to-RTEG for WIP
   for(i in 1:nrow(pids15)){
-    currentwoadDock<-pids15[i,]$woadDock
-    if(!is.na(pids15[i,]$RTEGActualDeliveryDate)) pids15[i,]$wipdays<-"RTEG'd"
+    if(!is.na(pids15[i,]$ActualDockMax)) currentwoadDock<-pids15[i,]$ActualDockMax
+      else currentwoadDock<-pids15[i,]$CurrentCommittedDockMax
+    if(pids15[i,]$RTEG<todaysdate) pids15[i,]$wipdays<-"RTEG'd"
       else
-      if(is.na(currentwoadDock)) pids15[i,]$wipdays<-"Pending Dock"
-        else if(currentwoadDock < todaysdate)
+      if(currentwoadDock>todaysdate) pids15[i,]$wipdays<-"Pending Dock"
+        else 
           pids15[i,]$wipdays<-as.integer(todaysdate-currentwoadDock)
       }
   
-  pids17<-subset(pids15,select = c("fiscalyear","DeliveryNumber","PropertyGroup","DemandID",
-                                   "Region","Pair","Status","Intent","RequestedDeliveryDate","RTEG","RTGM","Live", "CommittedDeliveryDate",
-                                   "crteg_month","dm_rteg_month","woadDock","DataCenter","wave","wipdays"))
+  pids17<-subset(pids15,select = c("fiscalyear","DeliveryNumber","PropertyGroup","DemandID", "Region"
+                                  ,"Pair","Status","Intent","RequestedDelivery","RTEG","RTGM","Live", "CommittedDelivery",
+                                   "crteg_month","dm_rteg_month","ActualDockMax","CurrentCommittedDockMax","DataCenter","wave","wipdays"))
   pids19<-arrange(pids17,fiscalyear,Pair,RTEG)
                  
 
