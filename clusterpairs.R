@@ -69,7 +69,7 @@ clusterpair<-function(){
   ,w.RequestedDelivery
   ,w.EstimatedRTEGDate
   ,w.CommittedDelivery
-  ,w.ActualCloseDate
+  ,w.ProjectDelivered
   ,w.DataCenter
   ,w.PropertyGroup
   ,W.DemandID
@@ -81,13 +81,13 @@ clusterpair<-function(){
   pids9 <- sqldf(SQLQuery1)
   
   ##convert dates to date format for pids table
-  pids9$ActualCloseDate <- as.Date(pids9$ActualCloseDate, format = "%m/%d/%Y")
+  pids9$ProjectDelivered <- as.Date(pids9$ProjectDelivered, format = "%m/%d/%Y")
   pids9$ActualDockMax <- as.Date(pids9$ActualDockMax, format = "%m/%d/%Y")
   pids9$CurrentCommittedDockMax <-as.Date(pids9$CurrentCommittedDockMax, format = "%m/%d/%Y")
   pids9$EstimatedRTEGDate <- as.Date(pids9$EstimatedRTEGDate, format = "%m/%d/%Y")
   pids9$RequestedDelivery <- as.Date(pids9$RequestedDelivery, format = "%m/%d/%Y")
   pids9$CommittedDelivery <- as.Date(pids9$CommittedDelivery, format = "%m/%d/%Y")
-  pids9$ActualCloseDate <- as.Date(pids9$ActualCloseDate, format = "%m/%d/%Y")
+  
   
   ##subset to just the PIDs in the pairing list
   pids11<-pids9[which(!is.na(pids9$Pair)),]
@@ -96,9 +96,9 @@ clusterpair<-function(){
   ##format dataframe for output - Region variable and RTEG variable
   pids13<-mutate(pids12, RTEG = as.Date(NA), Status = " ")
   for(i in 1:nrow(pids13)){
-    if(is.na(pids13[i,]$ActualCloseDate)) 
+    if(is.na(pids13[i,]$ProjectDelivered)) 
       pids13[i,]$RTEG<-as.Date(pids13[i,]$EstimatedRTEGDate,format = "%m/%d/%Y")
-    else pids13[i,]$RTEG<-as.Date(pids13[i,]$ActualCloseDate, format = "%m/%d/%Y")
+    else pids13[i,]$RTEG<-as.Date(pids13[i,]$ProjectDelivered, format = "%m/%d/%Y")
   }
   
   ##calculate Live date and RTEG month
