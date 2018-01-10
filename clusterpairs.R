@@ -137,10 +137,11 @@ clusterpair<-function(){
                                   ,"Pair","Status","Intent","RequestedDelivery","RTEG","RTGM","Live", "CommittedDelivery",
                                    "crteg_month","dm_rteg_month","ActualDockMax","CurrentCommittedDockMax","DataCenter","wave","wipdays"))
   pids19<-arrange(pids17,fiscalyear,Pair,RTEG)
+  pids21<-mutate(pids19, quickhits = "", lagging = "")
                  
 
   ##print output
-  write.csv(pids19,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/output_cluster_pairs.csv")
+  write.csv(pids21,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/output_cluster_pairs.csv")
   
   ##web scraping test
   ##con = url("http://spdeployment.azurewebsites.net/#/deployment/list/4")
