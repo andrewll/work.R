@@ -66,18 +66,16 @@ cycletime4<-function(){
   ## read the deployment performance file
   pids <- read.csv(file_loc1, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   
-  ##change column name for duplicate variable
-  pidsdup<-gsub("Current.Committed.Dock.Date","Current.Committed.Dock.Date.Dup",names(pids))
-  colnames(pids) <- c(pidsdup)
-  
   ## read the waves table
-  spowaves <- read.csv(file_loc5,header = TRUE, colClasses = NA, na.strings = "N/A", stringsAsFactors = TRUE)
+  spopairs <- read.csv(file_loc5,
+                       header = TRUE, colClasses = NA, na.strings = "N/A", stringsAsFactors = TRUE)
   
   ##remove dots in header names in pids table
   pidsnames <- gsub("\\.","",names(pids))
   colnames(pids) <- c(pidsnames)
-  spowavenames <-gsub("\\.","",names(spowaves))
-  colnames(spowaves) <-c(spowavenames)
+  
+  spopairnames <-gsub("\\.","",names(spopairs))
+  colnames(spopairs) <-c(spopairnames)
   
   ##convert dates into correct format
   pids$RTEGActualDeliveryDate <- as.Date(pids$RTEGActualDeliveryDate, format = "%m/%d/%Y")
@@ -89,8 +87,13 @@ cycletime4<-function(){
   pids$POCreatedDate<- as.Date(pids$POCreatedDate, format = "%m/%d/%Y")
   pids$POApprovedDate<- as.Date(pids$POApprovedDate, format = "%m/%d/%Y")
   
+  pids$ProjectDelivered <- as.Date.character(pids$ProjectDelivered, format = "%m/%d/%Y")
+  pids$EstimatedRTEGDate <- as.Date.character(pids$EstimatedRTEGDate)
+  pids$RequestedDelivery <- as.Date.character(pids$RequestedDelivery,, format = "%m/%d/%Y")
+  pids$CommittedDelivery <- as.Date.character(pids$CommittedDelivery, format = "%m/%d/%Y")
+  pids$CreationDate <- as.Date.character(pids$CreationDate, format = "%m/%d/%Y")
   
-
+  
   ##join the merge table with the pids table
   SQLQuery1 <- "SELECT p.DeliveryNumber
   ,p.EG

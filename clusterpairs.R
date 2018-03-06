@@ -20,7 +20,7 @@ clusterpair<-function(){
   ##go_locals<-c("457404","457405","458216","458217","458967","458968","458964","458965","458966")
   go_locals<-c("458216","458217")
   todaysdate<-today()
-  desired_eg<-c("O365 SharePoint")
+  desired_eg<-c("O365 SharePoint", "O365 Exchange","FOPE","OneDrive")
   
   
   ##define the deloyments file
@@ -81,24 +81,24 @@ clusterpair<-function(){
   pids9 <- sqldf(SQLQuery1)
   
   ##convert dates to date format for pids table
-  pids9$ProjectDelivered <- as.Date(pids9$ProjectDelivered, format = "%m/%d/%Y")
-  pids9$ActualDockMax <- as.Date(pids9$ActualDockMax, format = "%m/%d/%Y")
-  pids9$CurrentCommittedDockMax <-as.Date(pids9$CurrentCommittedDockMax, format = "%m/%d/%Y")
-  pids9$EstimatedRTEGDate <- as.Date(pids9$EstimatedRTEGDate, format = "%m/%d/%Y")
-  pids9$RequestedDelivery <- as.Date(pids9$RequestedDelivery, format = "%m/%d/%Y")
-  pids9$CommittedDelivery <- as.Date(pids9$CommittedDelivery, format = "%m/%d/%Y")
+  pids9$ProjectDelivered <- as.Date.character(pids9$ProjectDelivered, format = "%m/%d/%Y")
+  pids9$ActualDockMax <- as.Date.character(pids9$ActualDockMax, format = "%m/%d/%Y")
+  pids9$CurrentCommittedDockMax <-as.Date.character(pids9$CurrentCommittedDockMax, format = "%m/%d/%Y")
+  pids9$EstimatedRTEGDate <- as.Date.character(pids9$EstimatedRTEGDate, format = "%m/%d/%Y")
+  pids9$RequestedDelivery <- as.Date.character(pids9$RequestedDelivery,, format = "%m/%d/%Y")
+  pids9$CommittedDelivery <- as.Date.character(pids9$CommittedDelivery, format = "%m/%d/%Y")
   
   
   ##subset to just the PIDs in the pairing list
   pids11<-pids9[which(!is.na(pids9$Pair)),]
-  pids12<-pids11[which(!is.na(pids11$DeliveryNumber)),]
+  pids12<-pids11[which(!is.na(pids11$ProjectTitle)),]
   
   ##format dataframe for output - Region variable and RTEG variable
   pids13<-mutate(pids12, RTEG = as.Date(NA), Status = " ")
   for(i in 1:nrow(pids13)){
     if(is.na(pids13[i,]$ProjectDelivered)) 
-      pids13[i,]$RTEG<-as.Date(pids13[i,]$EstimatedRTEGDate,format = "%m/%d/%Y")
-    else pids13[i,]$RTEG<-as.Date(pids13[i,]$ProjectDelivered, format = "%m/%d/%Y")
+      pids13[i,]$RTEG<-pids13[i,]$EstimatedRTEGDate
+    else pids13[i,]$RTEG<-pids13[i,]$ProjectDelivered
   }
   
   ##calculate Live date and RTEG month
