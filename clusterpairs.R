@@ -134,8 +134,8 @@ clusterpair<-function(){
       }
   
   pids17<-subset(pids15,select = c("fiscalyear","DeliveryNumber","PropertyGroup","DemandID", "Region"
-                                  ,"Pair","Status","Intent","RequestedDelivery","RTEG","RTGM","Live", "CommittedDelivery",
-                                   "crteg_month","dm_rteg_month","ActualDockMax","CurrentCommittedDockMax","DataCenter","wave","wipdays"))
+                                  ,"Pair","Status","Intent","RequestedDelivery","RTEG","RTGM","Live", "CommittedDelivery"
+                                  ,"ActualDockMax","CurrentCommittedDockMax","DataCenter","wave","wipdays"))
   pids19<-arrange(pids17,fiscalyear,Pair,RTEG)
   pids21<-mutate(pids19, quickhits = "", lagging = "")
                  

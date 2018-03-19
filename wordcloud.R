@@ -1,7 +1,4 @@
-rquery.wordcloud <- function(x, type=c("text", "url", "file"), 
-                             lang="english", excludeWords=NULL, 
-                             textStemming=FALSE,  colorPalette="Dark2",
-                             min.freq=3, max.words=200)
+wordcloud <- function()
   {
   
   #++++++++++++++++++++++++++++++++++
@@ -23,11 +20,34 @@ rquery.wordcloud <- function(x, type=c("text", "url", "file"),
     library("tm")
     library("SnowballC")
     library("wordcloud")
-    library("RColorBrewer") 
+    library("RColorBrewer")
+    library("quanteda")
     
-    if(type[1]=="file") text <- readLines(x)
-    else if(type[1]=="url") text <- html_to_text(x)
-    else if(type[1]=="text") text <- x
+  ##set the path to DeploymentPerformance file
+  path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
+  
+  ##define the datasources
+  file1 <- "inc_125173.txt"
+  
+  ##define the Deployments file path
+  file_loc1 <- file.path(path, file1)
+  
+  ##setup variables
+  lang<-c("english")
+  colorPalette<-c("Dark2")
+  excludeWords<-c("please")
+  textStemming<-FALSE
+  min.freq<-3
+  max.words<-200
+  
+  
+    x<-read.table(file_loc1, header = FALSE, sep="\t", dec = ".")
+    type<-c("text")
+  
+    text<-x
+    ##if(type[1]=="file") text <- readLines(x)
+    ##else if(type[1]=="url") text <- html_to_text(x)
+    ##else if(type[1]=="text") text <- x
     
     # Load the text as a corpus
     docs <- Corpus(VectorSource(text))
@@ -52,34 +72,49 @@ rquery.wordcloud <- function(x, type=c("text", "url", "file"),
     v <- sort(rowSums(m),decreasing=TRUE)
     d <- data.frame(word = names(v),freq=v)
     # check the color palette name 
-    if(!colorPalette %in% rownames(brewer.pal.info)) colors = colorPalette
-    else colors = brewer.pal(8, colorPalette) 
+    ##if(!colorPalette %in% rownames(brewer.pal.info))
+    ##  colors = colorPalette
+    ##else colors = brewer.pal(8, colorPalette)
+    colors = brewer.pal(8,colorPalette)
     # Plot the word cloud
     set.seed(1234)
-    wordcloud(d$word,d$freq, min.freq=min.freq, max.words=max.words,
-              random.order=FALSE, rot.per=0.35, 
-              use.r.layout=FALSE, colors=colors)
+    ##wordcloud(d$word
+      ##        ,d$freq
+      ##        ,min.freq=min.freq
+      ##        ,max.words=max.words
+      ##        ,random.order=FALSE
+      ##        ,rot.per=0.35
+      ##        ,scale = c(4,.5)
+      ##        ,use.r.layout=FALSE
+      ##        ,colors=colors)
     
+    wordcloud(d$word
+              ,d$freq
+              ,scale = c(4,.5)
+              ,min.freq = min.freq
+              ,max.words = max.words
+              ,random.order=TRUE)
+
     invisible(list(tdm=tdm, freqTable = d))
+    
+    ##output dataframe
+    write.csv(d, file = "C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/125173_unigram_frequency.csv")
+    
   }
   #++++++++++++++++++++++
   # Helper function
   #++++++++++++++++++++++
   # Download and parse webpage
-  html_to_text<-function(url){
-    library(RCurl)
-    library(XML)
-    # download html
-    html.doc <- getURL(url)  
+  ##html_to_text<-function(url){
+  ##  library(RCurl)
+  ##  library(XML)
+  ##  # download html
+  ##  html.doc <- getURL(url)  
     #convert to plain text
-    doc = htmlParse(html.doc, asText=TRUE)
+  ##  doc = htmlParse(html.doc, asText=TRUE)
     # "//text()" returns all text outside of HTML tags.
     # We also don't want text such as style and script codes
-    text <- xpathSApply(doc, "//text()[not(ancestor::script)][not(ancestor::style)][not(ancestor::noscript)][not(ancestor::form)]", xmlValue)
+  ##  text <- xpathSApply(doc, "//text()[not(ancestor::script)][not(ancestor::style)][not(ancestor::noscript)][not(ancestor::form)]", xmlValue)
     # Format text vector into one character string
-    return(paste(text, collapse = " "))
-  }
-  
-  
-  
-}
+  ##  return(paste(text, collapse = " "))
+  ##}
