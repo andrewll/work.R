@@ -25,6 +25,7 @@ checksev<-function(){
   
   ##define variables
   desired_eg<-c("O365 SharePoint", "O365 Exchange","FOPE","OneDrive")
+  desired_projcat<-c("Discrete","EngineeringGroupNetwork","PRD")
   
   
   ## read the deployment performance file
@@ -36,6 +37,9 @@ checksev<-function(){
   
   pids3<-pids[which(pids$ProjectDelivered>'1/1/2018'),]
   pids5<-pids3[which(pids3$EngineeringGroup %in% desired_eg),]
+  pids7<-pids5[which(pids5$DeploymentClass=="New Deployment"),]
+  pids9<-pids7[which(pids7$ProjectCategory %in% desired_projcat),]
+  
   
   ##join the merge table with the pids table
   SQLQuery1 <- "SELECT p.DeliveryNumber
@@ -48,15 +52,15 @@ checksev<-function(){
   ,w.Description
 
   
-  FROM pids5 p
+  FROM pids9 p
   LEFT JOIN incidents w
   ON p.DeliveryNumber = w.DeliveryNumber"
   
-  pids7 <- sqldf(SQLQuery1)
+  pids11 <- sqldf(SQLQuery1)
   
   
   ##print output
-  write.csv(pids7,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/check_severity_output.csv")
+  write.csv(pids11,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/check_severity_output_622.csv")
   
   
 }
