@@ -100,4 +100,9 @@ joinprojwo<--function(){
   worders05$EndDate <- as.Date.character(worders05$EndDate, format = "%m/%d/%Y")
   worders07 <- mutate(worders05, calc_ticket_ct = EndDate - StartDate)
   
+  ##print output
+  write.csv(worders07,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/O365projects_workorders_network_Nov8.csv")
+  
+  
+  
 }
