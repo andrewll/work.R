@@ -182,14 +182,26 @@ fpnqueue<-function(){
                                  ,"EndDate"
                                  ,"DockDate"))
   
-  ##set dock date
+  ##set dock date for EG Network
   for (j in 1:dim(pids18)[1]){
-    if(!is.na(pids18$EndDate[j])){
-      pids18$DockDate[j]<-pids18$EndDate[j]
-    }else if(!is.na(pids18$ActualDockMax[j])){
-      pids18$DockDate[j]<-pids18$ActualDockMax[j]
-    }else pids18$DockDate[j]<-pids18$CurrentCommittedDockMax[j]
+    if(pids18$ProjectCategory[j]=="EngineeringGroupNetwork"){
+      if(!is.na(pids18$EndDate[j])){
+        pids18$DockDate[j]<-pids18$EndDate[j]
+      }else if(!is.na(pids18$ActualDockMax[j])){
+        pids18$DockDate[j]<-pids18$ActualDockMax[j]
+      }else pids18$DockDate[j]<-pids18$CurrentCommittedDockMax[j]
+    }
   }
+  
+  #Set dock date for PRD
+  for (j in 1:dim(pids18)[1]){
+    if(pids18$ProjectCategory[j]=="PRD"){
+      if(!is.na(pids18$ActualDockMax[j])){
+        pids18$DockDate[j]<-pids18$ActualDockMax[j]
+      }else pids18$DockDate[j]<-pids18$CurrentCommittedDockMax[j]
+    }
+  }
+  
   
   ##create pre-dock vs post-dock column
   pids20<-mutate(pids18, Pre_Post_Dock=NA)
@@ -209,8 +221,21 @@ fpnqueue<-function(){
     }else pids22$AgeofWIP[j]<-as.numeric(todaysdate-pids22$DockDate[j])
   }
   
+  pids24<-subset(pids22, select=c("DeliveryNumber"
+                                  ,"DemandID"
+                                  ,"Pre_Post_Dock"
+                                  ,"AgeofWIP"
+                                  ,"EngineeringGroup"
+                                  ,"PropertyGroup"
+                                  ,"ProjectCategory"
+                                  ,"DataCenter"
+                                  ,"DockDate"
+                                  ,"EndDate"
+                                  ,"CurrentCommittedDockMax"
+                                  ,"ActualDockMax"))
+  
   ##print sheet
-  write.csv(pids22,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/ouput_FPN_queue.csv")
+  write.csv(pids24,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/FPN_FIFO_queue.csv")
   
   
  
