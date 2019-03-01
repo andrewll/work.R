@@ -48,23 +48,27 @@ fpnqueue<-function(){
   
   ##set the path to DeploymentPerformance file
   path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
+  ##path2<- paste0("https://microsoft.sharepoint.com/teams/MCIO-CDE/_layouts/15/Doc.aspx?OR=teams&action=edit&sourcedoc={CAA043EF-A908-4A60-811E-4A4074287235}")
 
   ##define the input files
-  file1 <- "projects20190215.csv"
-  file5 <- "discovered_dock_date.csv"
-  file6 <- "manual_dockdate.csv"
-  
+  file1 <- "vwprojects2019.csv"
+  file5 <- "vwworkorder2019.csv" ## for network equipment orders that have blank dock dates
+  file6 <- "manual_dockdate.csv" ##for discrete servers where i determine dock dates manually through email
+  file7 <- "vwsignaltolivetracking2019.csv" ##for priority stack ranking info from CP
   
   ##define the Deployments file path
   file_loc1 <- file.path(path, file1)
   file_loc5 <- file.path(path, file5)
   file_loc6 <- file.path(path, file6)
+  file_loc7 <- file.path(path, file7)
+  ##file_loc8 <- file.path(path2)
   
   ## read the deployment performance file
   pids <- read.csv(file_loc1, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   ddd <- read.csv(file_loc5, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   mdd <- read.csv(file_loc6, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
-  
+  stltrack <- read.csv(file_loc7, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
+  ##manprilist <- read.table(file_loc8, header = TRUE,colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   
   ##select only desired columns
   pids03<-subset(pids, select = c("DeliveryNumber"
@@ -234,8 +238,53 @@ fpnqueue<-function(){
                                   ,"CurrentCommittedDockMax"
                                   ,"ActualDockMax"))
   
+  ##filter down the prioritystackranking
+  stltrack03<-stltrack[which(!is.na(stltrack$PriorityStackRank)),] ##remove null values 
+  
+  ##change header name to differentiate from pids headers
+  stltrack_names <- gsub("DeliveryNumber","stl_DeliveryNumber",names(stltrack03))
+  colnames(stltrack03) <- c(stltrack_names)
+  
+  ##merge prioritystackranking with main DF
+  SQLQuery1 <- "SELECT p.DeliveryNumber
+  ,p.DemandID
+  ,p.Pre_Post_Dock
+  ,p.AgeofWIP
+  ,p.EngineeringGroup
+  ,p.PropertyGroup
+  ,p.ProjectCategory
+  ,p.DataCenter
+  ,p.DockDate
+  ,p.EndDate
+  ,p.CurrentCommittedDockMax
+  ,p.ActualDockMax
+  ,w.stl_DeliveryNumber
+  ,w.ETADockDate
+
+  FROM pids24 p
+  LEFT JOIN stltrack03 w 
+  ON p.DeliveryNumber = w.stl_DeliveryNumber"
+  
+  pids27 <- sqldf(SQLQuery1)
+  
+  ##rearrange columns
+  pids29 <- subset(pids27, select=c("DeliveryNumber"
+                                  ,"AgeofWIP"
+                                  ,"ETADockDate"
+                                  ,"Pre_Post_Dock"
+                                  ,"EngineeringGroup"
+                                  ,"PropertyGroup"
+                                  ,"ProjectCategory"
+                                  ,"ProjectTitle"
+                                  ,"DataCenter"
+                                  ,"DockDate"
+                                  ,"EndDate"
+                                  ,"CurrentCommittedDockMax"
+                                  ,"ActualDockMax"))
+  
+  
   ##print sheet
-  write.csv(pids24,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/FPN_FIFO_queue.csv")
+  write.csv(pids29,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/FPN_FIFO_queue.csv")
   
   
  
