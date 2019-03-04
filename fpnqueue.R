@@ -70,8 +70,16 @@ fpnqueue<-function(){
   stltrack <- read.csv(file_loc7, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   ##manprilist <- read.table(file_loc8, header = TRUE,colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   
+  ##filter down the prioritystackranking
+  stltrack03<-stltrack[which(!is.na(stltrack$PriorityStackRank)),] ##remove null values 
+  
+  ##change header name to differentiate from pids headers
+  stltrack_names <- gsub("DeliveryNumber","stl_DeliveryNumber",names(stltrack03))
+  colnames(stltrack03) <- c(stltrack_names)
+  
   ##select only desired columns
   pids03<-subset(pids, select = c("DeliveryNumber"
+                                  ,"MDMID"
                                   ,"ProjectStatusName"
                                   ,"EngineeringGroup"
                                   ,"PropertyGroup"
@@ -122,6 +130,7 @@ fpnqueue<-function(){
   
   ##join data frames to capture discovered dock date
   SQLQuery1 <- "SELECT p.DeliveryNumber
+  ,p.MDMID
   ,p.EngineeringGroup
   ,p.PropertyGroup
   ,p.DataCenter
@@ -138,14 +147,16 @@ fpnqueue<-function(){
   
   pids14 <- sqldf(SQLQuery1)
   
-  ##create single dock date column
+  ##create single dock date column and fix formatting
   pids14<-mutate(pids14,DockDate=NA)
   pids14$DockDate<-as.Date(pids14$DockDate, format="%m/%d/%Y")
   pids14$ActualDockMax<-as.Date(pids14$ActualDockMax, format="%m/%d/%Y")
   pids14$CurrentCommittedDockMax<-as.Date(pids14$CurrentCommittedDockMax, format="%m/%d/%Y")
+  stltrack03$ETADockDate<-as.Date(stltrack03$ETADockDate, format="%m/%d/%Y")
   
   ##set manual dock date
   SQLQuery1 <- "SELECT p.DeliveryNumber
+  ,p.MDMID
   ,p.EngineeringGroup
   ,p.PropertyGroup
   ,p.DataCenter
@@ -167,6 +178,8 @@ fpnqueue<-function(){
   #change manual dock date to date format
   pids16$ManualDockDate<-as.Date(pids16$ManualDockDate, format="%m/%d/%Y")
   
+  ##manual dock date is when I manually search for a dock date for values that are NULL in vwProjects
+  ##projects not managed in MDM will not be in SignalToLiveTracking, so NULL ETADockDate
   ##merge manual dock date, and replace Actual dock
   for (j in 1:dim(pids16)[1]){
     if(!is.na(pids16$ManualDockDate[j])){
@@ -174,16 +187,43 @@ fpnqueue<-function(){
     }
   }
   
-  pids18<-subset(pids16,select=c("DeliveryNumber"
+  ##merge stltrack with pids
+  ##merge prioritystackranking with main DF
+  SQLQuery1 <- "SELECT p.DeliveryNumber
+  ,p.MDMID
+  ,p.DemandID
+  ,p.EngineeringGroup
+  ,p.PropertyGroup
+  ,p.ProjectCategory
+  ,p.DataCenter
+  ,p.DockDate
+  ,p.EndDate
+  ,p.CurrentCommittedDockMax
+  ,p.ActualDockMax
+  ,w.stl_DeliveryNumber
+  ,w.ETADockDate
+  ,w.PriorityStackRank
+  ,w.ProjectTitle
+  
+  FROM pids16 p
+  LEFT JOIN stltrack03 w 
+  ON p.DeliveryNumber = w.stl_DeliveryNumber"
+  
+  pids17 <- sqldf(SQLQuery1)
+  
+  
+  pids18<-subset(pids17,select=c("DeliveryNumber"
+                                 ,"MDMID"
+                                 ,"PriorityStackRank"
                                  ,"EngineeringGroup"
                                  ,"PropertyGroup"
                                  ,"DataCenter"
                                  ,"ProjectCategory"
                                  ,"CurrentCommittedDockMax"
                                  ,"ActualDockMax"
-                                 ,"CreationDate"
                                  ,"DemandID"
                                  ,"EndDate"
+                                 ,"ETADockDate"
                                  ,"DockDate"))
   
   ##set dock date for EG Network
@@ -193,7 +233,9 @@ fpnqueue<-function(){
         pids18$DockDate[j]<-pids18$EndDate[j]
       }else if(!is.na(pids18$ActualDockMax[j])){
         pids18$DockDate[j]<-pids18$ActualDockMax[j]
-      }else pids18$DockDate[j]<-pids18$CurrentCommittedDockMax[j]
+      }else if(!is.na(pids18$ETADockDate[j])){
+        pids18$DockDate[j]<-pids18$ETADockDate[j]
+        }else pids18$DockDate[j]<-pids18$CurrentCommittedDockMax[j]
     }
   }
   
@@ -202,6 +244,8 @@ fpnqueue<-function(){
     if(pids18$ProjectCategory[j]=="PRD"){
       if(!is.na(pids18$ActualDockMax[j])){
         pids18$DockDate[j]<-pids18$ActualDockMax[j]
+      }else if(!is.na(pids18$ETADockDate[j])){
+        pids18$DockDate[j]<-pids18$ETADockDate[j]
       }else pids18$DockDate[j]<-pids18$CurrentCommittedDockMax[j]
     }
   }
@@ -225,66 +269,25 @@ fpnqueue<-function(){
     }else pids22$AgeofWIP[j]<-as.numeric(todaysdate-pids22$DockDate[j])
   }
   
-  pids24<-subset(pids22, select=c("DeliveryNumber"
+  pids24<-subset(pids22, select=c("PriorityStackRank"
+                                  ,"AgeofWIP"
+                                  ,"DeliveryNumber"
                                   ,"DemandID"
+                                  ,"MDMID"
                                   ,"Pre_Post_Dock"
-                                  ,"AgeofWIP"
                                   ,"EngineeringGroup"
                                   ,"PropertyGroup"
                                   ,"ProjectCategory"
                                   ,"DataCenter"
-                                  ,"DockDate"
-                                  ,"EndDate"
-                                  ,"CurrentCommittedDockMax"
-                                  ,"ActualDockMax"))
+                                  ,"DockDate"))
   
-  ##filter down the prioritystackranking
-  stltrack03<-stltrack[which(!is.na(stltrack$PriorityStackRank)),] ##remove null values 
   
-  ##change header name to differentiate from pids headers
-  stltrack_names <- gsub("DeliveryNumber","stl_DeliveryNumber",names(stltrack03))
-  colnames(stltrack03) <- c(stltrack_names)
   
-  ##merge prioritystackranking with main DF
-  SQLQuery1 <- "SELECT p.DeliveryNumber
-  ,p.DemandID
-  ,p.Pre_Post_Dock
-  ,p.AgeofWIP
-  ,p.EngineeringGroup
-  ,p.PropertyGroup
-  ,p.ProjectCategory
-  ,p.DataCenter
-  ,p.DockDate
-  ,p.EndDate
-  ,p.CurrentCommittedDockMax
-  ,p.ActualDockMax
-  ,w.stl_DeliveryNumber
-  ,w.ETADockDate
 
-  FROM pids24 p
-  LEFT JOIN stltrack03 w 
-  ON p.DeliveryNumber = w.stl_DeliveryNumber"
-  
-  pids27 <- sqldf(SQLQuery1)
-  
-  ##rearrange columns
-  pids29 <- subset(pids27, select=c("DeliveryNumber"
-                                  ,"AgeofWIP"
-                                  ,"ETADockDate"
-                                  ,"Pre_Post_Dock"
-                                  ,"EngineeringGroup"
-                                  ,"PropertyGroup"
-                                  ,"ProjectCategory"
-                                  ,"ProjectTitle"
-                                  ,"DataCenter"
-                                  ,"DockDate"
-                                  ,"EndDate"
-                                  ,"CurrentCommittedDockMax"
-                                  ,"ActualDockMax"))
   
   
   ##print sheet
-  write.csv(pids29,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/FPN_FIFO_queue.csv")
+  write.csv(pids24,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/FPN_FIFO_queue.csv")
   
   
  
