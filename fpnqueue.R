@@ -55,29 +55,34 @@ fpnqueue<-function(){
   file5 <- "vwworkorder2019.csv" ## for network equipment orders that have blank dock dates
   file6 <- "manual_dockdate.csv" ##for discrete servers where i determine dock dates manually through email
   file7 <- "vwsignaltolivetracking2019.csv" ##for priority stack ranking info from CP
+  file8 <- "EGDemandbyMonth-EngGroup.csv"  ##EG demand for non-PNaaS properties
   
   ##define the Deployments file path
   file_loc1 <- file.path(path, file1)
   file_loc5 <- file.path(path, file5)
   file_loc6 <- file.path(path, file6)
   file_loc7 <- file.path(path, file7)
-  ##file_loc8 <- file.path(path2)
+  file_loc8 <- file.path(path, file8)
   
   ## read the deployment performance file
   pids <- read.csv(file_loc1, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   ddd <- read.csv(file_loc5, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   mdd <- read.csv(file_loc6, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   stltrack <- read.csv(file_loc7, header = TRUE, colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
-  ##manprilist <- read.table(file_loc8, header = TRUE,colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
+  egdemandbymonth <- read.csv(file_loc8, header = TRUE,colClasses = NA, na.strings = "#N/A", stringsAsFactors = TRUE)
   
   ##filter down the prioritystackranking
   stltrack03<-stltrack[which(!is.na(stltrack$PriorityStackRank)),] ##remove null values 
   
   ##change header name to differentiate from pids headers
+  egdemandbymonth_names <- gsub("X2019.","",names(egdemandbymonth))
+  colnames(egdemandbymonth) <- c(egdemandbymonth_names)
+  
+  ##cleanup headers
   stltrack_names <- gsub("DeliveryNumber","stl_DeliveryNumber",names(stltrack03))
   colnames(stltrack03) <- c(stltrack_names)
   
-  ##select only desired columns
+    ##select only desired columns
   pids03<-subset(pids, select = c("DeliveryNumber"
                                   ,"MDMID"
                                   ,"ProjectStatusName"
@@ -90,7 +95,8 @@ fpnqueue<-function(){
                                   ,"CurrentCommittedDockMax"
                                   ,"ActualDockMax"
                                   ,"CreationDate"
-                                  ,"DemandID"))
+                                  ,"DemandID"
+                                  ,"RequestedDelivery"))
   
   ##filter desired engineering groups
   pids04 <- pids03[which(pids03$EngineeringGroup %in% desired_eg),]
@@ -140,6 +146,7 @@ fpnqueue<-function(){
   ,p.ActualDockMax
   ,p.CreationDate
   ,p.DemandID
+  ,p.RequestedDelivery
   ,w.EndDate
   FROM pids11 p
   LEFT JOIN ddd_hdne05 w 
@@ -154,7 +161,7 @@ fpnqueue<-function(){
   pids14$CurrentCommittedDockMax<-as.Date(pids14$CurrentCommittedDockMax, format="%m/%d/%Y")
   stltrack03$ETADockDate<-as.Date(stltrack03$ETADockDate, format="%m/%d/%Y")
   
-  ##set manual dock date
+    ##set manual dock date
   SQLQuery1 <- "SELECT p.DeliveryNumber
   ,p.MDMID
   ,p.EngineeringGroup
@@ -166,9 +173,11 @@ fpnqueue<-function(){
   ,p.ActualDockMax
   ,p.CreationDate
   ,p.DemandID
+  ,p.RequestedDelivery
   ,p.EndDate
   ,p.DockDate
   ,w.ManualDockDate
+
   FROM pids14 p
   LEFT JOIN mdd w 
   ON p.DeliveryNumber = w.DeliveryNumber"
@@ -200,10 +209,15 @@ fpnqueue<-function(){
   ,p.EndDate
   ,p.CurrentCommittedDockMax
   ,p.ActualDockMax
+  ,p.RequestedDelivery
   ,w.stl_DeliveryNumber
   ,w.ETADockDate
   ,w.PriorityStackRank
   ,w.ProjectTitle
+  ,w.NeedByRTEGDate
+  ,w.PlanRTEGDate
+  ,w.NewTechFlag
+  ,w.IsNPI
   
   FROM pids16 p
   LEFT JOIN stltrack03 w 
@@ -224,7 +238,12 @@ fpnqueue<-function(){
                                  ,"DemandID"
                                  ,"EndDate"
                                  ,"ETADockDate"
-                                 ,"DockDate"))
+                                 ,"DockDate"
+                                 ,"RequestedDelivery"
+                                 ,"NeedByRTEGDate"
+                                 ,"PlanRTEGDate"
+                                 ,"NewTechFlag"
+                                 ,"IsNPI"))
   
   ##set dock date for EG Network
   for (j in 1:dim(pids18)[1]){
@@ -279,19 +298,39 @@ fpnqueue<-function(){
                                   ,"PropertyGroup"
                                   ,"ProjectCategory"
                                   ,"DataCenter"
-                                  ,"DockDate"))
+                                  ,"DockDate"
+                                  ,"RequestedDelivery"
+                                  ,"NeedByRTEGDate"
+                                  ,"PlanRTEGDate"
+                                  ,"NewTechFlag"
+                                  ,"IsNPI"))
+  
+  ##set NPIflag for null to FALSE
+  for(j in 1:dim(pids24)[1]){
+    if(is.na(pids24$IsNPI[j])){
+      pids24$IsNPI[j]<-c("FALSE")
+    }
+  }
   
   
+  ##remove NPI
+  pids26<-pids24[which(pids24$IsNPI=="FALSE"),]
   
 
   
   
   ##print sheet
-  write.csv(pids24,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/FPN_FIFO_queue.csv")
+  write.csv(pids26,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/FPN_FIFO_queue.csv")
   
-  
+  ##clear dataframe of unwanted rows: egdemandbymonth
+  ##egdbm<-egdemandbymonth[-c(1,3,4,6,8,9,10,12,13,14,15),]
+  ##egdbm03<-subset(egdbm, select=c("EngineeringGroup","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
+  ##egdbm05<-egdbm03 %>%
+  ##  mutate(Total = select(.,Jan:Dec) %>% colSums(na.rm = TRUE))
  
   
+  ##print sheet
+  ##write.csv(egdbm03,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/egdbm.csv")
   
   
 }
