@@ -50,6 +50,7 @@ aggorder<-function(){
   desired_deploymentclass<-c("New Deployment")
   desired_projects<-c("PRD","EngineeringGroupNetwork","DiscreteServer")
   desired_plangeo<-c("USDoD","USGov","USNat","USSec")
+  golocal_sg<-c("Singapore IDC2","Singapore IDC3")
   
   ##set the path to DeploymentPerformance file
   path <- paste0("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/in")
@@ -82,6 +83,7 @@ aggorder<-function(){
                                ,"PlanDockDate"
                                ,"PlanRTEGDate"
                                ,"DataCenter"
+                               ,"IsFirstFootprint"
                                ,"Region"
                                ,"RegionGroup"
                                ,"PlanOrderPriorityName"
@@ -107,7 +109,7 @@ aggorder<-function(){
   stltrack4<-stltrack3[which(stltrack3$EngineeringGroup %in% desired_eg),]
   
   ##Dates to correct format
-  stltrack5<-mutate(stltrack4,calc_CTD=NA,CTDTR=NA,DTR=NA, OnTimeToRTEG=NA)
+  stltrack5<-mutate(stltrack4,calc_CTD=NA,CTDTR=NA,DTR=NA, LateToRTEG=NA)
   
   stltrack5$PlanDockDate<-as.Date(stltrack5$PlanDockDate, format="%m/%d/%Y")
   stltrack5$PlanRTEGDate<-as.Date(stltrack5$PlanRTEGDate, format="%m/%d/%Y")
@@ -131,7 +133,7 @@ aggorder<-function(){
   }
   stltrack5$CTDTR<-as.numeric(stltrack5$CTDTR)
   stltrack5$DTR<-as.numeric(stltrack5$DTR)
-  stltrack5$OnTimeToRTEG<-as.numeric(stltrack5$OnTimeToRTEG)
+  stltrack5$LateToRTEG<-as.numeric(stltrack5$LateToRTEG)
   
   ##calculate ctd-to-rteg or dock-to-rteg
   for(j in 1:dim(stltrack5)[1]){
@@ -148,7 +150,7 @@ aggorder<-function(){
   ##calculate on time to requested RTEG
   for(j in 1:dim(stltrack5)[1]){
     if(!is.na(stltrack5$ActualRTEGDate[j])){
-      stltrack5$OnTimeToRTEG[j]<-stltrack5$ActualRTEGDate[j]-stltrack5$PlanRTEGDate[j]
+      stltrack5$LateToRTEG[j]<-stltrack5$ActualRTEGDate[j]-stltrack5$PlanRTEGDate[j]
     }
   }
   
@@ -167,14 +169,14 @@ aggorder<-function(){
     group_by(RegionGroup,EngineeringGroup) %>%
     summarize(P50_CTD_to_RTEG=median(CTDTR,na.rm = TRUE),
               P50_Dock_to_RTEG=median(DTR,na.rm = TRUE),
-              P50_Time_to_PlannedRTEG=median(OnTimeToRTEG,na.rm = TRUE)
+              P50_Time_to_PlannedRTEG=median(LateToRTEG,na.rm = TRUE)
               )
   
   stltrack7_P90<-stltrack5 %>%
     group_by(RegionGroup,EngineeringGroup) %>%
     summarize(P90_CTD_to_RTEG=quantile(CTDTR, .90, na.rm = TRUE),
               P90_Dock_to_RTEG=quantile(DTR, .90, na.rm = TRUE),
-              P90_Time_to_PlannedRTEG=quantile(OnTimeToRTEG, .90, na.rm = TRUE))
+              P90_Time_to_PlannedRTEG=quantile(LateToRTEG, .90, na.rm = TRUE))
   
   
   ##print sheet summary1
