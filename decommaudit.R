@@ -25,9 +25,9 @@ decommaudit<-function(){
   
   ##define the deloyments file
   file1 <- "decommdbassets.csv"
-  file2 <- "apdecomreport.csv"
-  file3 <- "decommunittable23517.csv"
-  projectid <- "23517"
+  file2 <- "apdecomreport23519.csv"
+  file3 <- "decommunitdetail23519.csv"
+  projectid <- "23519"
   
   
   ##define the Deployments file path
@@ -52,6 +52,15 @@ decommaudit<-function(){
   decompidnames <- gsub("^","decompid_",names(decompid))
   colnames(decompid) <- c(decompidnames)
   
+  ##add servercount to decompid
+  decompid02 <- mutate(decompid,servercount=0)
+  for (j in 1:dim(decompid02)[1]){
+    if(decompid02$decompid_ItemType[j]=="Server"){
+      decompid02$servercount[j]<-"1"
+    }
+  }
+  decompid02$servercount <- as.numeric(decompid02$servercount)
+  
   ##Extract ProjectID from Apdecommreport (unique)
   ##Get the first value from POD
   ##Extract the DC, colo, and rackname info and reconstruct that into the rackname in asset DF
@@ -70,10 +79,12 @@ decommaudit<-function(){
   ,d.decomdb_RackName
   ,d.decomdb_NetworkDeviceType
   ,d.decomdb_ProjectId
+  ,d.decomdb_Model
   ,e.apdecomreport_Name
   ,e.apdecomreport_Type
   ,e.apdecomreport_SKU
   ,e.apdecomreport_IPAddress
+  ,e.apdecomreport_Pod
 
   FROM assets_net01 d
   LEFT JOIN ap_net01 e
@@ -82,7 +93,29 @@ decommaudit<-function(){
   assets_net03 <- sqldf(SQLQuery1)
   
   ##print sheet
-  write.csv(assets_net03,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_networkswitch_matching.csv")
+  write.csv(assets_net03,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_networkswitch_byPID.csv")
+  
+  #join network lists by APDecomReport
+  SQLQuery1 <- "SELECT e.apdecomreport_Name
+  ,e.apdecomreport_Type
+  ,e.apdecomreport_SKU
+  ,e.apdecomreport_IPAddress
+  ,e.apdecomreport_Pod
+  ,d.decomdb_DeviceName
+  ,d.decomdb_RackName
+  ,d.decomdb_NetworkDeviceType
+  ,d.decomdb_ProjectId
+  ,d.decomdb_Model
+  
+  FROM ap_net01 e  
+  LEFT JOIN assets_net01 d
+  ON e.apdecomreport_Name = d.decomdb_DeviceName"
+  
+  assets_net05 <- sqldf(SQLQuery1)
+  
+  ##print sheet
+  write.csv(assets_net05,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_networkswitch_byAPdecomReport.csv")
+  
   
   ##add count column to server DF
   assets_svr03 <- mutate(assets_svr01, ServerCount = 1)
@@ -93,19 +126,33 @@ decommaudit<-function(){
     summarize(ServerCount = sum(ServerCount)) %>%
     arrange(decomdb_RackName)
   
+  ##summarize server count by rackname
+  decompid03 <- decompid02 %>%
+    group_by(decompid_RackName) %>%
+    summarize(decompid_ServerCount = sum(servercount)) %>%
+    arrange(decompid_RackName)
+  
   ##join with decompid
-  SQLQuery1 <- "SELECT d.decompid_Name
-  ,d.decompid_ServerCount
-  ,d.decompid_ProjectId
+  SQLQuery1 <- "SELECT d.decompid_RackName
+  ,d.decompid_Servercount
   ,e.decomdb_RackName
   ,e.ServerCount
-
   
-  FROM decompid d
+  FROM decompid03 d
   LEFT JOIN assets_svr05 e
-  ON d.decompid_Name = e.decomdb_RackName"
+  ON d.decompid_RackName = e.decomdb_RackName"
   
   assets_svr07 <- sqldf(SQLQuery1)
+  
+  ##count matching
+  ##asset_svr09 <- mutate(assets_svr07,countmatch = "FALSE")
+  ##for (j in 1:dim(asset_svr09)[1]){
+  ##  if(asset_svr09$decompid_ServerCount[j]==asset_svr09$Servercount[j]){
+  ##    asset_svr09$countmatch[j]<-c("TRUE")
+  ##  }
+  ##}
+  
+  ##summarize APdecomreport on server count, join that with this table to verify servercount matches
   
   ##print sheet
   write.csv(assets_svr07,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_servercount.csv")
