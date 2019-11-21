@@ -25,9 +25,10 @@ decommaudit<-function(){
   
   ##define the deloyments file
   file1 <- "decommdbassets.csv"
-  file2 <- "apdecomreport23519.csv"
-  file3 <- "decommunitdetail23519.csv"
-  projectid <- "23519"
+  file2 <- "apdecomreport25216.csv"
+  file3 <- "decommprojectanddetails-25216.csv"
+  projectid <- readline(prompt="Enter a ProjectID:")
+    print(c("Thank you, ProjectID is",projectid,"Proceeding with script"))
   
   
   ##define the Deployments file path
@@ -70,6 +71,7 @@ decommaudit<-function(){
   decomdbassets3 <- decomdbassets[which(decomdbassets$decomdb_ProjectId %in% projectid),]
   assets_svr01 <-decomdbassets3[which(decomdbassets3$decomdb_ItemType=='Server'),]
   assets_net01 <-decomdbassets3[which(decomdbassets3$decomdb_ItemType=='NetworkDevice'),]
+  assets_net02 <-mutate_all(assets_net01, funs(toupper))
   
   ##subset assets from apdecomreport
   ap_net01 <- apdecomreport[which(apdecomreport$apdecomreport_Type=='MiniSwitch'),]
@@ -86,14 +88,14 @@ decommaudit<-function(){
   ,e.apdecomreport_IPAddress
   ,e.apdecomreport_Pod
 
-  FROM assets_net01 d
+  FROM assets_net02 d
   LEFT JOIN ap_net01 e
   ON d.decomdb_DeviceName = e.apdecomreport_Name"
   
   assets_net03 <- sqldf(SQLQuery1)
   
   ##print sheet
-  write.csv(assets_net03,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_networkswitch_byPID.csv")
+  write.csv(assets_net03,file=paste("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_networkswitch_byPID",projectid,".csv",sep="_"))
   
   #join network lists by APDecomReport
   SQLQuery1 <- "SELECT e.apdecomreport_Name
@@ -108,13 +110,13 @@ decommaudit<-function(){
   ,d.decomdb_Model
   
   FROM ap_net01 e  
-  LEFT JOIN assets_net01 d
+  LEFT JOIN assets_net02 d
   ON e.apdecomreport_Name = d.decomdb_DeviceName"
   
   assets_net05 <- sqldf(SQLQuery1)
   
   ##print sheet
-  write.csv(assets_net05,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_networkswitch_byAPdecomReport.csv")
+  write.csv(assets_net05,file=paste("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_networkswitch_byAPdecomReport",projectid,".csv",sep="_"))
   
   
   ##add count column to server DF
@@ -155,6 +157,6 @@ decommaudit<-function(){
   ##summarize APdecomreport on server count, join that with this table to verify servercount matches
   
   ##print sheet
-  write.csv(assets_svr07,file="C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_servercount.csv")
+  write.csv(assets_svr07,file=paste("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_servercount",projectid,".csv",sep="_"))
   
 }
