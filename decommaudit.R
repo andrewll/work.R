@@ -24,11 +24,14 @@ decommaudit<-function(){
   
   
   ##define the deloyments file
-  file1 <- "decommdbassets.csv"
-  file2 <- "apdecomreport25216.csv"
-  file3 <- "decommprojectanddetails-25216.csv"
   projectid <- readline(prompt="Enter a ProjectID:")
-    print(c("Thank you, ProjectID is",projectid,"Proceeding with script"))
+  print(c("Thank you, ProjectID is",projectid,"Proceeding with script"))
+  file1 <- "decommdbassets.csv"
+  file2 <- paste("apdecomreport",projectid,".csv",sep="")
+  ##file2 <- "apdecomreport25216.csv"
+  file3 <- paste("decommprojectanddetails",projectid,".csv",sep="")
+  ##file3 <- "decommprojectanddetails-25216.csv"
+  
   
   
   ##define the Deployments file path
@@ -97,6 +100,8 @@ decommaudit<-function(){
   ##print sheet
   write.csv(assets_net03,file=paste("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_networkswitch_byPID",projectid,".csv",sep="_"))
   
+  print(c("Comparing network devices.  First output file generated.  Please stand by for more..."))
+  
   #join network lists by APDecomReport
   SQLQuery1 <- "SELECT e.apdecomreport_Name
   ,e.apdecomreport_Type
@@ -118,6 +123,7 @@ decommaudit<-function(){
   ##print sheet
   write.csv(assets_net05,file=paste("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_networkswitch_byAPdecomReport",projectid,".csv",sep="_"))
   
+  print(c("Comparing network devices.  Second output file generated.  Please stand by for more..."))
   
   ##add count column to server DF
   assets_svr03 <- mutate(assets_svr01, ServerCount = 1)
@@ -158,5 +164,7 @@ decommaudit<-function(){
   
   ##print sheet
   write.csv(assets_svr07,file=paste("C:/Users/andrewll/OneDrive - Microsoft/WindowsPowerShell/Data/out/decomm_servercount",projectid,".csv",sep="_"))
+  
+  print(c("Comparing server count.  Done.  Please check your output files."))
   
 }
